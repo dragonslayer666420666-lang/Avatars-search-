@@ -1,0 +1,3824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#080b14" />
+  <meta name="description" content="A mobile-friendly search hub for game development assets." />
+  <title>Asset Galaxy — Game Asset Search</title>
+  <style>
+    :root{
+      --bg:#070913;
+      --panel:#111527;
+      --panel2:#171d34;
+      --text:#f5f7ff;
+      --muted:#9ca6c7;
+      --line:rgba(255,255,255,.10);
+      --cyan:#38e8ff;
+      --pink:#ff4fd8;
+      --purple:#8c63ff;
+      --green:#54f7a8;
+      --yellow:#ffd45b;
+      --danger:#ff6b83;
+      --shadow:0 18px 55px rgba(0,0,0,.42);
+      --radius:20px;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        radial-gradient(circle at 12% 0%,rgba(140,99,255,.20),transparent 30rem),
+        radial-gradient(circle at 90% 14%,rgba(56,232,255,.14),transparent 28rem),
+        radial-gradient(circle at 60% 100%,rgba(255,79,216,.10),transparent 28rem),
+        var(--bg);
+    }
+
+    button,input,select{font:inherit}
+    button{color:inherit}
+    a{color:inherit}
+    .app{width:min(1200px,100%);margin:auto;padding:18px 14px 100px}
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:10px 4px 14px;
+      background:linear-gradient(to bottom,rgba(7,9,19,.98),rgba(7,9,19,.82),transparent);
+      backdrop-filter:blur(12px);
+    }
+    .brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .logo{
+      width:46px;height:46px;border-radius:15px;display:grid;place-items:center;
+      font-size:24px;font-weight:900;
+      background:linear-gradient(135deg,var(--cyan),var(--purple),var(--pink));
+      box-shadow:0 0 30px rgba(140,99,255,.35);
+      flex:0 0 auto;
+    }
+    .brand h1{font-size:18px;margin:0;white-space:nowrap}
+    .brand small{display:block;color:var(--muted);margin-top:2px}
+    .icon-btn{
+      width:44px;height:44px;border:1px solid var(--line);border-radius:14px;
+      background:rgba(255,255,255,.05);display:grid;place-items:center;cursor:pointer;
+    }
+
+    .hero{
+      overflow:hidden;position:relative;
+      border:1px solid var(--line);border-radius:28px;padding:24px 18px 20px;
+      background:linear-gradient(145deg,rgba(23,29,52,.95),rgba(12,15,29,.96));
+      box-shadow:var(--shadow);
+    }
+    .hero:before{
+      content:"";position:absolute;inset:-80px -80px auto auto;width:240px;height:240px;
+      background:conic-gradient(from 90deg,var(--cyan),var(--pink),var(--purple),var(--cyan));
+      filter:blur(65px);opacity:.18;border-radius:50%;
+    }
+    .eyebrow{
+      display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border-radius:999px;
+      border:1px solid rgba(56,232,255,.25);background:rgba(56,232,255,.07);
+      color:#bbf8ff;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    }
+    .hero h2{position:relative;font-size:clamp(29px,8vw,58px);line-height:.98;margin:18px 0 12px;max-width:780px}
+    .gradient-text{
+      background:linear-gradient(90deg,var(--cyan),#9d8bff,var(--pink));
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .hero p{position:relative;color:var(--muted);font-size:15px;line-height:1.55;max-width:760px;margin:0 0 18px}
+    .search-shell{
+      position:relative;display:grid;grid-template-columns:1fr auto;gap:10px;
+      background:rgba(4,6,14,.62);border:1px solid rgba(255,255,255,.14);
+      border-radius:18px;padding:8px;
+    }
+    .search-shell input{
+      width:100%;min-width:0;border:0;outline:0;color:var(--text);background:transparent;
+      padding:11px 10px;font-size:16px;
+    }
+    .search-shell input::placeholder{color:#707b9e}
+    .primary{
+      border:0;border-radius:13px;padding:12px 16px;font-weight:900;cursor:pointer;
+      background:linear-gradient(135deg,var(--cyan),var(--purple));color:#07101b;
+      min-width:96px;
+    }
+    .primary:active,.secondary:active,.chip:active,.source-btn:active{transform:scale(.98)}
+
+    .filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .select-wrap{
+      border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.045);
+      padding:4px 10px;
+    }
+    .select-wrap label{display:block;color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase;padding:3px 2px 0}
+    select{
+      width:100%;border:0;outline:0;color:var(--text);background:transparent;padding:4px 0 7px;
+    }
+    select option{background:#151a2e;color:white}
+
+    .chips{
+      display:flex;gap:8px;overflow-x:auto;padding:16px 2px 4px;
+      scrollbar-width:none;
+    }
+    .chips::-webkit-scrollbar{display:none}
+    .chip{
+      flex:0 0 auto;border:1px solid var(--line);border-radius:999px;padding:9px 13px;
+      background:rgba(255,255,255,.04);color:var(--muted);font-weight:800;font-size:13px;cursor:pointer;
+    }
+    .chip.active{
+      color:#07101b;border-color:transparent;background:linear-gradient(135deg,var(--green),var(--cyan));
+      box-shadow:0 0 22px rgba(56,232,255,.18);
+    }
+
+    .tabs{
+      position:sticky;top:68px;z-index:35;
+      display:flex;gap:7px;margin:18px 0;overflow-x:auto;scrollbar-width:none;
+      padding:6px;border:1px solid var(--line);border-radius:16px;background:rgba(12,15,29,.89);
+      backdrop-filter:blur(16px);
+    }
+    .tab{
+      flex:0 0 auto;min-width:96px;border:0;border-radius:11px;padding:11px 9px;
+      background:transparent;color:var(--muted);font-size:12px;font-weight:900;cursor:pointer;
+    }
+    .tabs::-webkit-scrollbar{display:none}
+    .tab.active{background:var(--panel2);color:var(--text);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:18px 2px 12px}
+    .section-head h3{margin:0;font-size:20px}
+    .section-head p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .count{color:var(--cyan);font-size:12px;font-weight:900;white-space:nowrap}
+
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .source-card,.result-card,.saved-card{
+      border:1px solid var(--line);border-radius:var(--radius);
+      background:linear-gradient(145deg,rgba(23,29,52,.88),rgba(14,18,33,.92));
+      box-shadow:0 12px 30px rgba(0,0,0,.2);overflow:hidden;
+    }
+    .source-card{padding:15px}
+    .source-top{display:flex;gap:12px;align-items:center}
+    .source-icon{
+      width:50px;height:50px;border-radius:15px;display:grid;place-items:center;
+      font-size:24px;background:linear-gradient(135deg,rgba(56,232,255,.16),rgba(140,99,255,.18));
+      border:1px solid rgba(255,255,255,.08);flex:0 0 auto;
+    }
+    .source-info{min-width:0;flex:1}
+    .source-info h4{margin:0 0 4px;font-size:16px}
+    .source-info p{margin:0;color:var(--muted);font-size:12px;line-height:1.4}
+    .badges{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+    .badge{
+      font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;
+      border-radius:999px;padding:5px 8px;background:rgba(255,255,255,.06);color:#b8c1df;
+    }
+    .badge.free{background:rgba(84,247,168,.11);color:#8dffc3}
+    .badge.license{background:rgba(255,212,91,.10);color:#ffe395}
+    .source-actions{display:grid;grid-template-columns:1fr auto;gap:8px}
+    .source-btn,.secondary{
+      border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.06);
+      padding:10px 12px;font-weight:900;cursor:pointer;text-decoration:none;text-align:center;
+    }
+    .source-btn{background:linear-gradient(135deg,rgba(56,232,255,.16),rgba(140,99,255,.18));color:#d9fbff}
+    .heart{width:42px;padding:0;font-size:18px}
+    .heart.on{color:var(--pink);border-color:rgba(255,79,216,.45);background:rgba(255,79,216,.10)}
+
+    .live-tools{
+      display:flex;gap:8px;align-items:center;overflow-x:auto;padding:0 1px 10px;
+      scrollbar-width:none;
+    }
+    .live-tools button{
+      flex:0 0 auto;border:1px solid var(--line);border-radius:12px;padding:9px 12px;
+      background:rgba(255,255,255,.05);font-weight:800;color:var(--muted);cursor:pointer;
+    }
+    .live-tools button.active{color:#07101b;background:var(--green);border-color:transparent}
+
+    .pc-workspace{display:grid;grid-template-columns:1fr;gap:12px}
+    .pc-card{
+      border:1px solid var(--line);border-radius:var(--radius);padding:16px;
+      background:linear-gradient(145deg,rgba(23,29,52,.9),rgba(14,18,33,.94));
+      box-shadow:0 12px 30px rgba(0,0,0,.2);
+    }
+    .pc-card h4{margin:0 0 6px;font-size:17px}
+    .pc-card p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+    .pc-step{
+      display:inline-grid;place-items:center;width:27px;height:27px;border-radius:9px;
+      margin-bottom:10px;background:linear-gradient(135deg,var(--green),var(--cyan));
+      color:#061018;font-weight:1000;
+    }
+    .pc-drop{
+      margin-top:13px;padding:22px 14px;border:1px dashed rgba(56,232,255,.38);
+      border-radius:16px;text-align:center;background:rgba(56,232,255,.045);cursor:pointer;
+    }
+    .pc-drop.drag{border-color:var(--green);background:rgba(84,247,168,.09)}
+    .pc-drop strong{display:block;margin-bottom:5px}
+    .pc-drop small{color:var(--muted)}
+    .pc-fields{display:grid;grid-template-columns:1fr;gap:10px;margin-top:13px}
+    .pc-field label{
+      display:block;color:var(--muted);font-size:10px;font-weight:900;
+      text-transform:uppercase;letter-spacing:.05em;margin:0 0 5px 2px;
+    }
+    .pc-field input,.pc-field textarea{
+      width:100%;border:1px solid var(--line);border-radius:13px;outline:0;
+      background:rgba(255,255,255,.045);color:var(--text);padding:11px 12px;
+    }
+    .pc-field textarea{min-height:76px;resize:vertical}
+    .pc-actions{display:grid;grid-template-columns:1fr;gap:9px;margin-top:12px}
+    .pc-actions .primary,.pc-actions .secondary{min-height:45px}
+    .pc-queue{display:grid;grid-template-columns:1fr;gap:9px;margin-top:12px}
+    .pc-file{
+      display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
+      padding:11px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.035);
+    }
+    .pc-file-icon{
+      width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+      background:rgba(140,99,255,.14);font-size:20px;
+    }
+    .pc-file-info{min-width:0}
+    .pc-file-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+    .pc-file-info small{color:var(--muted);font-size:10px}
+    .pc-remove{
+      width:38px;height:38px;border:1px solid rgba(255,107,131,.2);border-radius:11px;
+      background:rgba(255,107,131,.07);color:#ff9cab;cursor:pointer;
+    }
+    .pc-help{
+      margin-top:12px;border-radius:14px;padding:12px;background:rgba(84,247,168,.055);
+      border:1px solid rgba(84,247,168,.18);font-size:11px;color:#bdebd2;line-height:1.5;
+    }
+    .queue-mini{
+      border:1px solid rgba(84,247,168,.25);border-radius:10px;padding:8px 10px;
+      background:rgba(84,247,168,.08);color:#a7ffd0;font-size:11px;font-weight:900;cursor:pointer;
+    }
+
+    .pc-code-toolbar{
+      display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;
+    }
+    .pc-code-grid{
+      display:grid;grid-template-columns:1fr;gap:11px;
+    }
+    .pc-code-card{
+      border:1px solid var(--line);border-radius:16px;overflow:hidden;
+      background:linear-gradient(145deg,rgba(17,21,39,.98),rgba(11,14,27,.98));
+    }
+    .pc-code-head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:12px 13px;border-bottom:1px solid var(--line);
+    }
+    .pc-code-title{min-width:0}
+    .pc-code-title strong{
+      display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;
+    }
+    .pc-code-title small{display:block;color:var(--cyan);font-size:10px;margin-top:3px}
+    .copy-code{
+      flex:0 0 auto;border:1px solid rgba(56,232,255,.27);border-radius:10px;
+      background:rgba(56,232,255,.08);color:#bff9ff;padding:8px 10px;font-weight:900;
+      font-size:11px;cursor:pointer;
+    }
+    .pc-code{
+      margin:0;padding:14px;overflow:auto;white-space:pre;tab-size:2;
+      color:#dce6ff;background:#080b15;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;
+      -webkit-overflow-scrolling:touch;
+    }
+    .pc-key{
+      display:inline-block;margin-top:7px;border-radius:8px;padding:4px 7px;
+      background:rgba(140,99,255,.13);color:#c7baff;font:10px ui-monospace,SFMono-Regular,Consolas,monospace;
+    }
+
+    .code-category-bar{
+      display:flex;gap:8px;overflow-x:auto;padding:2px 1px 13px;
+      scrollbar-width:none;
+    }
+    .code-category-bar::-webkit-scrollbar{display:none}
+    .code-category{
+      flex:0 0 auto;border:1px solid var(--line);border-radius:999px;
+      padding:9px 12px;background:rgba(255,255,255,.045);color:var(--muted);
+      font-size:11px;font-weight:900;cursor:pointer;
+    }
+    .code-category.active{
+      border-color:transparent;color:#07101b;
+      background:linear-gradient(135deg,var(--green),var(--cyan));
+    }
+    .code-search-row{
+      display:grid;grid-template-columns:1fr auto;gap:9px;margin-bottom:13px;
+    }
+    .code-search-row input{
+      width:100%;min-width:0;border:1px solid var(--line);border-radius:13px;
+      background:rgba(255,255,255,.045);color:var(--text);padding:11px 12px;outline:0;
+    }
+    .code-summary{
+      display:flex;flex-wrap:wrap;gap:8px;margin-bottom:13px;
+    }
+    .code-summary span{
+      border:1px solid var(--line);border-radius:10px;padding:7px 9px;
+      background:rgba(255,255,255,.035);color:var(--muted);font-size:10px;font-weight:900;
+    }
+
+    .mega-hero{
+      position:relative;overflow:hidden;border:1px solid rgba(84,247,168,.22);
+      border-radius:24px;padding:19px;background:
+      radial-gradient(circle at 90% 0%,rgba(84,247,168,.13),transparent 20rem),
+      linear-gradient(145deg,rgba(17,26,35,.98),rgba(12,15,29,.98));
+      box-shadow:var(--shadow);
+    }
+    .mega-hero h3{margin:4px 0 8px;font-size:24px}
+    .mega-hero p{margin:0;color:var(--muted);font-size:13px;line-height:1.55;max-width:760px}
+    .mega-stat-row{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:14px}
+    .mega-stat{
+      border:1px solid var(--line);border-radius:14px;padding:12px;
+      background:rgba(255,255,255,.035);
+    }
+    .mega-stat strong{display:block;font-size:19px;color:var(--green)}
+    .mega-stat small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+    .mega-builder{
+      display:grid;grid-template-columns:1fr;gap:11px;margin-top:14px;
+    }
+    .mega-field{
+      border:1px solid var(--line);border-radius:15px;padding:9px 11px;
+      background:rgba(255,255,255,.035);
+    }
+    .mega-field label{
+      display:block;color:var(--muted);font-size:10px;font-weight:900;
+      text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;
+    }
+    .mega-field select,.mega-field input{
+      width:100%;border:0;outline:0;background:transparent;color:var(--text);
+      padding:4px 0 3px;
+    }
+    .mega-field input::placeholder{color:#707b9e}
+    .mega-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+    .mega-presets{
+      display:flex;gap:8px;overflow-x:auto;padding:2px 1px 13px;scrollbar-width:none;
+    }
+    .mega-presets::-webkit-scrollbar{display:none}
+    .mega-preset{
+      flex:0 0 auto;border:1px solid var(--line);border-radius:999px;padding:9px 12px;
+      background:rgba(255,255,255,.045);color:var(--muted);font-size:11px;font-weight:900;
+      cursor:pointer;
+    }
+    .mega-preset.active{
+      color:#07101b;border-color:transparent;background:linear-gradient(135deg,var(--green),var(--cyan));
+    }
+    .mega-results{
+      display:grid;grid-template-columns:1fr;gap:10px;
+    }
+    .mega-card{
+      border:1px solid var(--line);border-radius:17px;padding:14px;
+      background:linear-gradient(145deg,rgba(23,29,52,.9),rgba(14,18,33,.94));
+    }
+    .mega-card-top{display:flex;align-items:center;gap:11px}
+    .mega-card-icon{
+      width:43px;height:43px;border-radius:13px;display:grid;place-items:center;
+      background:rgba(84,247,168,.1);font-size:20px;flex:0 0 auto;
+    }
+    .mega-card h4{margin:0 0 3px;font-size:14px}
+    .mega-card p{margin:0;color:var(--muted);font-size:11px;line-height:1.4}
+    .mega-card .source-actions{margin-top:11px}
+    .mega-query{
+      margin-top:9px;padding:8px;border-radius:10px;background:#080b15;color:#bff9ff;
+      font:10px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;
+      overflow:auto;white-space:nowrap;
+    }
+    .free-pack-grid{
+      display:grid;grid-template-columns:1fr;gap:10px;
+    }
+    .free-pack{
+      border:1px solid rgba(84,247,168,.18);border-radius:16px;padding:13px;
+      background:rgba(84,247,168,.045);
+    }
+    .free-pack strong{display:block;margin-bottom:4px}
+    .free-pack p{margin:0 0 10px;color:var(--muted);font-size:11px;line-height:1.45}
+    .free-pack a{
+      display:inline-block;text-decoration:none;border-radius:11px;padding:9px 11px;
+      background:rgba(84,247,168,.13);border:1px solid rgba(84,247,168,.24);
+      color:#b4ffd6;font-size:11px;font-weight:900;
+    }
+
+    .game-layout{display:grid;grid-template-columns:1fr;gap:13px}
+    .game-stage-card{
+      border:1px solid var(--line);border-radius:24px;overflow:hidden;
+      background:#070a12;box-shadow:var(--shadow);
+    }
+    .game-stage{
+      position:relative;min-height:520px;height:min(68vh,700px);touch-action:none;
+      background:radial-gradient(circle at 50% 35%,#172237,#080b14 68%);
+      overflow:hidden;
+    }
+    #gameCanvas{display:block;width:100%;height:100%;touch-action:none}
+    .game-hud{
+      position:absolute;top:10px;left:10px;right:10px;z-index:6;
+      display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+      pointer-events:none;
+    }
+    .game-hud-block{
+      border:1px solid rgba(255,255,255,.13);border-radius:13px;padding:8px 10px;
+      background:rgba(6,9,18,.72);backdrop-filter:blur(8px);
+      box-shadow:0 8px 18px rgba(0,0,0,.25);
+    }
+    .game-hud-block strong{display:block;font-size:12px}
+    .game-hud-block small{display:block;color:#b8c2df;font-size:9px;margin-top:2px}
+    .game-health-track{
+      width:116px;height:8px;border-radius:999px;margin-top:6px;overflow:hidden;
+      background:rgba(255,255,255,.12);
+    }
+    .game-health-fill{
+      width:100%;height:100%;border-radius:inherit;
+      background:linear-gradient(90deg,var(--green),var(--cyan));transition:width .18s;
+    }
+    .game-message{
+      position:absolute;left:50%;top:18%;z-index:7;transform:translateX(-50%);
+      max-width:82%;padding:10px 14px;border:1px solid rgba(255,255,255,.13);
+      border-radius:13px;background:rgba(6,9,18,.78);backdrop-filter:blur(8px);
+      font-weight:900;text-align:center;pointer-events:none;opacity:0;transition:.2s;
+    }
+    .game-message.show{opacity:1}
+    .game-top-actions{
+      position:absolute;right:10px;top:75px;z-index:8;display:flex;gap:7px;
+    }
+    .game-mini-btn{
+      border:1px solid rgba(255,255,255,.13);border-radius:11px;padding:8px 10px;
+      background:rgba(6,9,18,.72);color:var(--text);font-size:10px;font-weight:900;
+      backdrop-filter:blur(8px);cursor:pointer;
+    }
+    .game-controls{
+      position:absolute;left:0;right:0;bottom:0;z-index:8;display:flex;
+      align-items:flex-end;justify-content:space-between;padding:14px;
+      pointer-events:none;
+    }
+    .move-pad{
+      width:126px;height:126px;border:1px solid rgba(255,255,255,.16);
+      border-radius:50%;background:rgba(5,8,16,.42);backdrop-filter:blur(5px);
+      position:relative;pointer-events:auto;touch-action:none;
+    }
+    .move-pad:before,.move-pad:after{
+      content:"";position:absolute;background:rgba(255,255,255,.08);border-radius:999px;
+    }
+    .move-pad:before{left:15px;right:15px;top:50%;height:2px}
+    .move-pad:after{top:15px;bottom:15px;left:50%;width:2px}
+    .move-nub{
+      position:absolute;left:50%;top:50%;width:55px;height:55px;margin:-27.5px;
+      border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));
+      box-shadow:0 0 28px rgba(56,232,255,.28);transform:translate(0,0);
+    }
+    .game-action-stack{display:grid;grid-template-columns:repeat(2,72px);gap:9px;pointer-events:auto}
+    .game-action{
+      width:72px;height:72px;border:1px solid rgba(255,255,255,.15);border-radius:50%;
+      background:rgba(7,11,21,.7);color:var(--text);font-size:11px;font-weight:1000;
+      box-shadow:0 10px 24px rgba(0,0,0,.32);touch-action:none;cursor:pointer;
+    }
+    .game-action.primary-action{
+      background:linear-gradient(135deg,rgba(84,247,168,.88),rgba(56,232,255,.88));
+      color:#071018;border-color:transparent;
+    }
+    .game-side{
+      border:1px solid var(--line);border-radius:22px;padding:16px;
+      background:linear-gradient(145deg,rgba(23,29,52,.9),rgba(14,18,33,.95));
+    }
+    .game-side h4{margin:0 0 5px;font-size:17px}
+    .game-side p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}
+    .game-import-actions{display:grid;grid-template-columns:1fr;gap:9px;margin-top:12px}
+    .game-file-input{display:none}
+    .game-role{
+      width:100%;margin-top:12px;border:1px solid var(--line);border-radius:13px;
+      background:rgba(255,255,255,.045);color:var(--text);padding:11px 12px;outline:0;
+    }
+    .game-drop{
+      margin-top:10px;border:1px dashed rgba(56,232,255,.35);border-radius:15px;
+      padding:18px 12px;text-align:center;background:rgba(56,232,255,.04);
+      cursor:pointer;touch-action:none;
+    }
+    .game-drop.drag{background:rgba(84,247,168,.09);border-color:var(--green)}
+    .game-drop strong{display:block;margin-bottom:4px}
+    .game-drop small{color:var(--muted)}
+    .game-import-note{
+      margin-top:11px;border:1px solid rgba(255,212,91,.18);border-radius:13px;
+      padding:11px;background:rgba(255,212,91,.05);color:#eadfaf;font-size:10px;line-height:1.5;
+    }
+    .game-assets{display:grid;gap:8px;margin-top:12px}
+    .game-asset-row{
+      display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;
+      padding:10px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.035);
+    }
+    .game-asset-icon{
+      width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+      background:rgba(140,99,255,.13);
+    }
+    .game-asset-row strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .game-asset-row small{display:block;color:var(--muted);font-size:9px;margin-top:3px}
+    .game-remove-asset{
+      width:36px;height:36px;border:1px solid rgba(255,107,131,.2);border-radius:10px;
+      background:rgba(255,107,131,.07);color:#ff9cab;cursor:pointer;
+    }
+    .game-status{
+      margin-top:10px;padding:10px;border-radius:12px;background:rgba(84,247,168,.05);
+      border:1px solid rgba(84,247,168,.16);font-size:10px;color:#b7f6d1;line-height:1.45;
+    }
+    .direct-game-btn{
+      border:1px solid rgba(255,79,216,.26);border-radius:10px;padding:8px 9px;
+      background:rgba(255,79,216,.08);color:#ffc3f2;font-size:10px;font-weight:900;cursor:pointer;
+    }
+    @media(min-width:900px){
+      .game-layout{grid-template-columns:minmax(0,1.65fr) minmax(300px,.75fr)}
+      .game-import-actions{grid-template-columns:1fr 1fr}
+    }
+
+    .result-card .thumb{
+      aspect-ratio:16/10;background:#0c1020;display:grid;place-items:center;overflow:hidden;position:relative;
+    }
+    .result-card .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .result-card .thumb .placeholder{font-size:42px;opacity:.7}
+    .result-body{padding:13px}
+    .result-body h4{font-size:15px;margin:0 0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .result-body p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+    .result-meta{display:flex;justify-content:space-between;gap:8px;margin-top:11px;align-items:center}
+    .result-meta span{font-size:10px;font-weight:900;color:var(--cyan);text-transform:uppercase}
+    .result-meta a{
+      text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:8px 10px;
+      background:rgba(255,255,255,.05);font-size:12px;font-weight:900;
+    }
+    audio{width:100%;height:38px;margin-top:12px}
+
+    .empty{
+      grid-column:1/-1;border:1px dashed rgba(255,255,255,.16);border-radius:20px;
+      padding:34px 18px;text-align:center;color:var(--muted);background:rgba(255,255,255,.025);
+    }
+    .empty strong{display:block;color:var(--text);font-size:18px;margin-bottom:6px}
+    .spinner{
+      width:34px;height:34px;border:4px solid rgba(255,255,255,.12);border-top-color:var(--cyan);
+      border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .notice{
+      margin-top:18px;border:1px solid rgba(255,212,91,.25);border-radius:16px;
+      padding:13px;background:rgba(255,212,91,.055);color:#e8dcae;font-size:12px;line-height:1.5;
+    }
+    .footer{color:var(--muted);font-size:11px;text-align:center;padding:28px 10px 0}
+    .hidden{display:none!important}
+    .toast{
+      position:fixed;left:50%;bottom:24px;z-index:100;transform:translate(-50%,120px);
+      background:#f5f7ff;color:#090b13;border-radius:13px;padding:11px 15px;font-weight:900;
+      box-shadow:var(--shadow);transition:.25s;max-width:calc(100vw - 28px);text-align:center;
+    }
+    .toast.show{transform:translate(-50%,0)}
+    .drawer{
+      position:fixed;inset:0;z-index:90;background:rgba(1,3,9,.72);backdrop-filter:blur(8px);
+      display:flex;justify-content:flex-end;
+    }
+    .drawer-panel{
+      width:min(390px,92vw);height:100%;overflow:auto;padding:18px;
+      border-left:1px solid var(--line);background:#0d1120;box-shadow:-20px 0 55px rgba(0,0,0,.45);
+    }
+    .drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .drawer-head h3{margin:0}
+    .history-item{
+      width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-top:9px;padding:12px;border:1px solid var(--line);border-radius:13px;
+      background:rgba(255,255,255,.04);color:var(--text);text-align:left;cursor:pointer;
+    }
+    .history-item small{color:var(--muted)}
+    .clear-btn{width:100%;margin-top:16px;border-color:rgba(255,107,131,.25);color:#ff9cab}
+
+    @media(min-width:680px){
+      .app{padding:24px 22px 100px}
+      .hero{padding:34px}
+      .filters{grid-template-columns:repeat(2,minmax(180px,260px))}
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .pc-workspace{grid-template-columns:1fr 1fr}
+      .pc-fields{grid-template-columns:1fr 1fr}
+      .pc-code-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .mega-builder{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .mega-results{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .free-pack-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .mega-stat-row{grid-template-columns:repeat(4,1fr)}
+      .pc-actions{grid-template-columns:1fr 1fr}
+      .tabs{width:100%;max-width:100%}
+    }
+    @media(min-width:1000px){
+      .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .source-card{padding:17px}
+      .mega-results{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .free-pack-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *{scroll-behavior:auto!important;animation-duration:.001ms!important;transition-duration:.001ms!important}
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">AG</div>
+        <div>
+          <h1>Asset Galaxy</h1>
+          <small>Game asset search hub</small>
+        </div>
+      </div>
+      <button class="icon-btn" id="historyBtn" aria-label="Open search history">🕘</button>
+    </header>
+
+    <section class="hero">
+      <span class="eyebrow">✦ Search many libraries</span>
+      <h2>Find assets for your <span class="gradient-text">next game.</span></h2>
+      <p>Search models, sprites, animations, textures, audio, maps, interface packs, visual effects, fonts, shaders, plugins, and starter code.</p>
+
+      <form id="searchForm" class="search-shell">
+        <input id="searchInput" type="search" autocomplete="off" placeholder="Try: ruined city, pixel hero, forest ambience…" aria-label="Search game assets" />
+        <button class="primary" type="submit">Search</button>
+      </form>
+
+      <div class="filters">
+        <div class="select-wrap">
+          <label for="categorySelect">Asset type</label>
+          <select id="categorySelect"></select>
+        </div>
+        <div class="select-wrap">
+          <label for="licenseSelect">License preference</label>
+          <select id="licenseSelect">
+            <option value="any">Any license</option>
+            <option value="cc0">CC0 / public domain</option>
+            <option value="free">Free options</option>
+            <option value="commercial">Commercial-use options</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="chips" id="categoryChips"></div>
+    </section>
+
+    <nav class="tabs" aria-label="Search sections">
+      <button class="tab active" data-tab="sources">Libraries</button>
+      <button class="tab" data-tab="live">Live media</button>
+      <button class="tab" data-tab="github">GitHub</button>
+      <button class="tab" data-tab="mega">Mega Search</button>
+      <button class="tab" data-tab="game">3D Game</button>
+      <button class="tab" data-tab="playcanvas">PlayCanvas</button>
+      <button class="tab" data-tab="codes">Asset Codes</button>
+    </nav>
+
+    <section id="sourcesPanel">
+      <div class="section-head">
+        <div>
+          <h3>Asset libraries</h3>
+          <p>Open a focused search on the selected site.</p>
+        </div>
+        <div class="count" id="sourceCount"></div>
+      </div>
+      <div class="grid" id="sourceGrid"></div>
+    </section>
+
+    <section id="livePanel" class="hidden">
+      <div class="section-head">
+        <div>
+          <h3>Open media results</h3>
+          <p>Preview openly licensed images and audio.</p>
+        </div>
+        <div class="count" id="liveCount"></div>
+      </div>
+      <div class="live-tools">
+        <button class="active" data-live-type="images">Images & textures</button>
+        <button data-live-type="audio">Audio</button>
+        <button id="loadMoreBtn">Load more</button>
+      </div>
+      <div class="grid" id="liveGrid">
+        <div class="empty"><strong>Search to load previews</strong>Enter a term above, then choose this tab.</div>
+      </div>
+    </section>
+
+    <section id="githubPanel" class="hidden">
+      <div class="section-head">
+        <div>
+          <h3>GitHub projects</h3>
+          <p>Find open-source asset packs, tools, shaders, and game templates.</p>
+        </div>
+        <div class="count" id="githubCount"></div>
+      </div>
+      <div class="grid" id="githubGrid">
+        <div class="empty"><strong>Search GitHub repositories</strong>Use the search box above to find related projects.</div>
+      </div>
+    </section>
+
+    <section id="megaPanel" class="hidden">
+      <div class="mega-hero">
+        <span class="eyebrow">☣ Free horror asset finder</span>
+        <h3>Zombie & Horror Mega Search</h3>
+        <p>Build focused searches for free zombie characters, blood visual effects, ruined environments, eerie audio, animations, interface packs, and survival props. The number below counts possible search combinations—not guaranteed unique downloads.</p>
+
+        <div class="mega-stat-row">
+          <div class="mega-stat"><strong id="megaCombinationCount">100,000+</strong><small>possible searches</small></div>
+          <div class="mega-stat"><strong id="megaSourceTotal">0</strong><small>search libraries</small></div>
+          <div class="mega-stat"><strong id="megaThemeTotal">0</strong><small>horror themes</small></div>
+          <div class="mega-stat"><strong>Free-first</strong><small>license keywords added</small></div>
+        </div>
+
+        <div class="mega-builder">
+          <div class="mega-field">
+            <label for="megaTheme">Theme</label>
+            <select id="megaTheme"></select>
+          </div>
+          <div class="mega-field">
+            <label for="megaAssetType">Asset type</label>
+            <select id="megaAssetType"></select>
+          </div>
+          <div class="mega-field">
+            <label for="megaStyle">Style</label>
+            <select id="megaStyle"></select>
+          </div>
+          <div class="mega-field">
+            <label for="megaFormat">Format / engine</label>
+            <select id="megaFormat"></select>
+          </div>
+          <div class="mega-field" style="grid-column:1/-1">
+            <label for="megaCustom">Extra words</label>
+            <input id="megaCustom" placeholder="Example: mobile optimized, night scene, animated…" />
+          </div>
+        </div>
+
+        <div class="mega-actions">
+          <button class="primary" id="buildMegaSearch">Build free searches</button>
+          <button class="secondary" id="randomMegaSearch">Surprise me</button>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h3>Fast horror presets</h3>
+          <p>Tap a preset to build searches instantly.</p>
+        </div>
+      </div>
+      <div class="mega-presets" id="megaPresets"></div>
+
+      <div class="section-head">
+        <div>
+          <h3>Search routes</h3>
+          <p>Each button opens a free-focused search on a different asset library.</p>
+        </div>
+        <div class="count" id="megaResultCount"></div>
+      </div>
+      <div class="mega-results" id="megaResults">
+        <div class="empty"><strong>Build your first mega search</strong>Choose a theme or tap one of the horror presets.</div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h3>Free starter packs</h3>
+          <p>Useful starting points for a zombie or horror project. Check each license page before publishing.</p>
+        </div>
+      </div>
+      <div class="free-pack-grid">
+        <article class="free-pack">
+          <strong>Zombie Apocalypse Kit</strong>
+          <p>CC0 3D characters, enemies, animations, environment pieces, and vehicles in common model formats.</p>
+          <a href="https://quaternius.com/packs/zombieapocalypsekit.html" target="_blank" rel="noopener">Open free pack</a>
+        </article>
+        <article class="free-pack">
+          <strong>Free zombie assets on itch.io</strong>
+          <p>A large tag page with free 2D and 3D zombie packs from many creators.</p>
+          <a href="https://itch.io/game-assets/free/tag-zombies" target="_blank" rel="noopener">Browse free zombies</a>
+        </article>
+        <article class="free-pack">
+          <strong>OpenGameArt zombie search</strong>
+          <p>Community-made sprites, animations, sounds, effects, and models with varying open licenses.</p>
+          <a href="https://opengameart.org/art-search?keys=zombie" target="_blank" rel="noopener">Search OpenGameArt</a>
+        </article>
+        <article class="free-pack">
+          <strong>Sketchfab zombie models</strong>
+          <p>Interactive 3D previews. Use the downloadable and license filters on each result.</p>
+          <a href="https://sketchfab.com/tags/zombie" target="_blank" rel="noopener">Browse 3D zombies</a>
+        </article>
+        <article class="free-pack">
+          <strong>CraftPix free zombie sprites</strong>
+          <p>Free 2D zombie character and sprite-sheet pages alongside paid packs.</p>
+          <a href="https://craftpix.net/freebies/?s=zombie" target="_blank" rel="noopener">Browse free sprites</a>
+        </article>
+        <article class="free-pack">
+          <strong>Poly Pizza free 3D models</strong>
+          <p>Thousands of lightweight low-poly models that can help build environments and props.</p>
+          <a href="https://poly.pizza/" target="_blank" rel="noopener">Search Poly Pizza</a>
+        </article>
+      </div>
+    </section>
+
+    <section id="gamePanel" class="hidden">
+      <div class="section-head">
+        <div>
+          <h3>Signal Run: 3D Zombie Escape</h3>
+          <p>Collect five signal cores, avoid the infected, and use the energy pulse to push them away.</p>
+        </div>
+        <div class="count" id="gameEngineStatus">Game ready</div>
+      </div>
+
+      <div class="game-layout">
+        <article class="game-stage-card">
+          <div class="game-stage" id="gameStage">
+            <canvas id="gameCanvas" aria-label="3D zombie survival game"></canvas>
+
+            <div class="game-hud">
+              <div class="game-hud-block">
+                <strong>ENERGY <span id="gameHealthText">100</span></strong>
+                <div class="game-health-track"><div class="game-health-fill" id="gameHealthFill"></div></div>
+              </div>
+              <div class="game-hud-block" style="text-align:right">
+                <strong>CORES <span id="gameCoreText">0/5</span></strong>
+                <small id="gamePulseText">Pulse ready</small>
+              </div>
+            </div>
+
+            <div class="game-message show" id="gameMessage">Tap Start, then collect five glowing signal cores.</div>
+
+            <div class="game-top-actions">
+              <button class="game-mini-btn" id="gameStartBtn">START</button>
+              <button class="game-mini-btn" id="gamePauseBtn">PAUSE</button>
+              <button class="game-mini-btn" id="gameResetBtn">RESET</button>
+            </div>
+
+            <div class="game-controls">
+              <div class="move-pad" id="gameMovePad" aria-label="Movement joystick">
+                <div class="move-nub" id="gameMoveNub"></div>
+              </div>
+              <div class="game-action-stack">
+                <button class="game-action primary-action" id="gamePulseBtn">PULSE</button>
+                <button class="game-action" id="gameJumpBtn">JUMP</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="game-side">
+          <h4>Automatic Asset Import</h4>
+          <p>Select a downloaded file and it is immediately detected, saved in this browser, and added to the running game.</p>
+
+          <select id="gameAssetRole" class="game-role">
+            <option value="auto">Auto-detect the asset role</option>
+            <option value="player">Use model as player</option>
+            <option value="enemy">Use model as zombie/enemy</option>
+            <option value="prop">Place model as environment prop</option>
+            <option value="ground">Use image as ground texture</option>
+            <option value="sky">Use image as sky/background</option>
+            <option value="decal">Place image as effect decal</option>
+            <option value="music">Use audio as background music</option>
+            <option value="pulseSound">Use audio as pulse sound</option>
+          </select>
+
+          <input class="game-file-input" id="gameAssetInput" type="file" multiple
+            accept=".zip,.glb,.gltf,.bin,.fbx,.obj,.dae,.ply,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tga,.hdr,.wav,.mp3,.ogg,.m4a,.flac,.json" />
+          <input class="game-file-input" id="gameFolderInput" type="file" multiple webkitdirectory directory />
+
+          <div class="game-drop" id="gameAssetDrop" role="button" tabindex="0">
+            <strong>＋ Add Downloads to Game</strong>
+            <small>GLB, glTF packs, FBX, OBJ, images, audio, JSON, or ZIP packs.</small>
+          </div>
+
+          <div class="game-import-actions">
+            <button class="secondary" id="gameFolderBtn">Import extracted folder</button>
+            <button class="secondary" id="gameSearchBtn">Search free assets</button>
+          </div>
+
+          <div class="game-import-note">
+            A browser cannot silently detect a new file downloaded in another tab. After downloading, return here and tap <strong>Add Downloads to Game</strong>. From that point onward, importing and placing the compatible asset is automatic.
+          </div>
+
+          <div class="game-status" id="gameImportStatus">No custom assets imported yet. Built-in low-poly assets are active.</div>
+
+          <div class="section-head" style="margin-top:18px">
+            <div>
+              <h3 style="font-size:16px">Game assets</h3>
+              <p>Saved locally and restored when this page opens again.</p>
+            </div>
+            <button class="secondary" id="gameClearAssets">Clear</button>
+          </div>
+
+          <div class="game-assets" id="gameAssetList">
+            <div class="empty" style="padding:18px 10px"><strong>No imported assets</strong>Add a downloaded asset above.</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="playcanvasPanel" class="hidden">
+      <div class="section-head">
+        <div>
+          <h3>PlayCanvas Import Queue</h3>
+          <p>Turn files from your Downloads folder into an organized PlayCanvas pack.</p>
+        </div>
+        <div class="count" id="pcQueueCount">0 files</div>
+      </div>
+
+      <div class="pc-workspace">
+        <article class="pc-card">
+          <span class="pc-step">1</span>
+          <h4>Add downloaded files</h4>
+          <p>After downloading an asset, choose it from your phone. You can select models, textures, audio, animation files, fonts, JSON, and scripts together.</p>
+          <input id="pcFileInput" type="file" multiple hidden
+            accept=".glb,.gltf,.fbx,.obj,.dae,.ply,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tga,.hdr,.exr,.ktx,.ktx2,.wav,.mp3,.ogg,.m4a,.flac,.json,.js,.mjs,.css,.html,.txt,.bin,.ttf,.otf,.woff,.woff2,.vert,.frag,.glsl,.wgsl" />
+          <div class="pc-drop" id="pcDropZone" role="button" tabindex="0">
+            <strong>＋ Choose files from Downloads</strong>
+            <small>Tap here, or drag and drop files on a computer.</small>
+          </div>
+          <div class="pc-help">
+            Websites opened in another tab cannot let this app secretly read your Downloads folder. Tap this box after the download finishes, or use <strong>Add to queue</strong> on supported live results.
+          </div>
+        </article>
+
+        <article class="pc-card">
+          <span class="pc-step">2</span>
+          <h4>Build the import pack</h4>
+          <p>The pack contains your files, a manifest, instructions, and loader scripts that find assets by filename inside PlayCanvas.</p>
+          <div class="pc-fields">
+            <div class="pc-field">
+              <label for="pcFolderName">Pack folder</label>
+              <input id="pcFolderName" value="ImportedAssets" maxlength="50" />
+            </div>
+            <div class="pc-field">
+              <label for="pcPackTag">Asset tag</label>
+              <input id="pcPackTag" value="imported-asset" maxlength="40" />
+            </div>
+          </div>
+          <div class="pc-field" style="margin-top:10px">
+            <label for="pcPackNotes">License/source notes</label>
+            <textarea id="pcPackNotes" placeholder="Paste the creator, asset page, and license notes here."></textarea>
+          </div>
+          <div class="pc-actions">
+            <button class="primary" id="buildPcPack">Build PlayCanvas Pack</button>
+            <a class="secondary" href="https://playcanvas.com/" target="_blank" rel="noopener">Open PlayCanvas</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h3>Files waiting</h3>
+          <p>They stay in memory until you export or refresh the page.</p>
+        </div>
+        <button class="secondary" id="clearPcQueue">Clear queue</button>
+      </div>
+      <div class="pc-queue" id="pcQueue">
+        <div class="empty"><strong>No files queued</strong>Choose files from Downloads or queue a supported live result.</div>
+      </div>
+
+      <div class="pc-actions">
+        <button class="primary" id="openAssetCodesCategory">Open Asset Codes Category</button>
+      </div>
+    </section>
+
+    <section id="codesPanel" class="hidden">
+      <div class="section-head">
+        <div>
+          <h3>Asset Codes</h3>
+          <p>A complete category for generated PlayCanvas asset code.</p>
+        </div>
+        <div class="pc-code-toolbar">
+          <button class="secondary" id="copyAllAssetCodes">Copy all codes</button>
+          <button class="secondary" id="downloadAssetCodes">Download codes</button>
+        </div>
+      </div>
+
+      <div class="code-category-bar" id="codeCategoryBar">
+        <button class="code-category active" data-code-category="all">✨ All Codes</button>
+        <button class="code-category" data-code-category="model">🧊 Models</button>
+        <button class="code-category" data-code-category="texture">🖼️ Textures</button>
+        <button class="code-category" data-code-category="audio">🎧 Audio</button>
+        <button class="code-category" data-code-category="font">🔤 Fonts</button>
+        <button class="code-category" data-code-category="json">{ } JSON</button>
+        <button class="code-category" data-code-category="script">🧩 Scripts</button>
+        <button class="code-category" data-code-category="shader">🌈 Shaders</button>
+        <button class="code-category" data-code-category="text">📄 Text</button>
+        <button class="code-category" data-code-category="other">📦 Other</button>
+      </div>
+
+      <div class="code-search-row">
+        <input id="assetCodeSearch" type="search" placeholder="Search filename, key, or code type…" />
+        <button class="secondary" id="clearAssetCodeSearch">Clear</button>
+      </div>
+
+      <div class="code-summary" id="assetCodeSummary"></div>
+
+      <div class="pc-code-grid" id="pcCodeGrid">
+        <div class="empty"><strong>No asset codes yet</strong>Add files in the PlayCanvas category to generate code automatically.</div>
+      </div>
+    </section>
+
+    <div class="notice">
+      <strong>License reminder:</strong> Always open the asset page and read its exact license before using it. “Free” does not always mean attribution-free or commercial-use friendly.
+    </div>
+    <footer class="footer">Asset Galaxy stores favorites and recent searches inside your browser. Queued files remain only until the page refreshes.</footer>
+  </main>
+
+  <aside class="drawer hidden" id="drawer" aria-hidden="true">
+    <div class="drawer-panel">
+      <div class="drawer-head">
+        <h3>Saved & recent</h3>
+        <button class="icon-btn" id="closeDrawer" aria-label="Close">✕</button>
+      </div>
+      <h4>Favorite libraries</h4>
+      <div id="favoritesList"></div>
+      <h4 style="margin-top:24px">Recent searches</h4>
+      <div id="historyList"></div>
+      <button class="secondary clear-btn" id="clearStorage">Clear saved data</button>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const categories = [
+    ["all","All types","✨"],
+    ["3d","3D models","🧊"],
+    ["2d","2D sprites","🎨"],
+    ["animation","Animations","🏃"],
+    ["texture","Textures & materials","🧱"],
+    ["audio","Sound effects","🔊"],
+    ["music","Music","🎵"],
+    ["map","Maps & environments","🗺️"],
+    ["ui","UI & icons","🖥️"],
+    ["vfx","VFX & particles","💥"],
+    ["font","Fonts","🔤"],
+    ["shader","Shaders","🌈"],
+    ["code","Code & plugins","🧩"],
+    ["props","Props & items","📦"]
+  ];
+
+  const sources = [
+    {
+      id:"kenney", name:"Kenney", icon:"K", types:["all","2d","3d","audio","ui","texture","font","props"],
+      description:"Large collection of game-ready packs and development resources.",
+      free:true, license:"Check each pack",
+      url:q=>`https://kenney.nl/assets?s=${encodeURIComponent(q)}`
+    },
+    {
+      id:"opengameart", name:"OpenGameArt", icon:"🖼️", types:["all","2d","3d","audio","music","texture","map","ui","vfx","props"],
+      description:"Community library covering art, audio, textures, and more.",
+      free:true, license:"Various open licenses",
+      url:q=>`https://opengameart.org/art-search?keys=${encodeURIComponent(q)}`
+    },
+    {
+      id:"itch", name:"itch.io Game Assets", icon:"🎮", types:["all","2d","3d","animation","audio","music","texture","map","ui","vfx","font","code","props"],
+      description:"Free and paid asset packs from independent creators.",
+      free:true, license:"Creator-specific",
+      url:q=>`https://itch.io/game-assets/search?q=${encodeURIComponent(q)}`
+    },
+    {
+      id:"sketchfab", name:"Sketchfab", icon:"◈", types:["3d","animation","props","map"],
+      description:"Searchable previews of 3D models and animated assets.",
+      free:true, license:"Various",
+      url:q=>`https://sketchfab.com/search?type=models&q=${encodeURIComponent(q)}`
+    },
+    {
+      id:"polyhaven", name:"Poly Haven", icon:"⬡", types:["3d","texture","map","props"],
+      description:"Models, HDRIs, and PBR textures for environment building.",
+      free:true, license:"CC0",
+      url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:polyhaven.com "+q)}`
+    },
+    {
+      id:"ambientcg", name:"ambientCG", icon:"◌", types:["3d","texture","props"],
+      description:"PBR materials, surfaces, decals, and models.",
+      free:true, license:"CC0",
+      url:q=>`https://ambientcg.com/list?search=${encodeURIComponent(q)}`
+    },
+    {
+      id:"freesound", name:"Freesound", icon:"〽️", types:["audio","music"],
+      description:"Community sound library with previews and license details.",
+      free:true, license:"Creative Commons",
+      url:q=>`https://freesound.org/search/?q=${encodeURIComponent(q)}`
+    },
+    {
+      id:"pixabay", name:"Pixabay Audio", icon:"🔉", types:["audio","music"],
+      description:"Search music and sound-effect collections.",
+      free:true, license:"Site license",
+      url:q=>`https://pixabay.com/sound-effects/search/${encodeURIComponent(q)}/`
+    },
+    {
+      id:"mixkit", name:"Mixkit", icon:"M", types:["audio","music","vfx"],
+      description:"Audio, music, and video effects collections.",
+      free:true, license:"Site license",
+      url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:mixkit.co "+q+" game asset")}`
+    },
+    {
+      id:"gameicons", name:"Game-icons.net", icon:"♜", types:["2d","ui"],
+      description:"A focused collection of game interface symbols and icons.",
+      free:true, license:"Check icon license",
+      url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:game-icons.net "+q)}`
+    },
+    {
+      id:"lospec", name:"Lospec", icon:"▦", types:["2d","texture","ui"],
+      description:"Pixel-art palettes, tools, tutorials, and community resources.",
+      free:true, license:"Various",
+      url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:lospec.com "+q)}`
+    },
+    {
+      id:"googlefonts", name:"Google Fonts", icon:"Aa", types:["font","ui"],
+      description:"Browse fonts for titles, menus, HUDs, and dialogue.",
+      free:true, license:"Open font licenses",
+      url:q=>`https://fonts.google.com/?query=${encodeURIComponent(q)}`
+    },
+    {
+      id:"godot", name:"Godot Asset Library", icon:"🤖", types:["code","shader","ui","vfx"],
+      description:"Plugins, templates, scripts, tools, and shaders for Godot.",
+      free:true, license:"Open source",
+      url:q=>`https://godotengine.org/asset-library/asset?filter=${encodeURIComponent(q)}`
+    },
+    {
+      id:"unity", name:"Unity Asset Store", icon:"◇", types:["all","2d","3d","animation","audio","music","texture","map","ui","vfx","shader","code","props"],
+      description:"Game engine marketplace with free and paid packages.",
+      free:true, license:"Store license",
+      url:q=>`https://assetstore.unity.com/?q=${encodeURIComponent(q)}&orderBy=1`
+    },
+    {
+      id:"fab", name:"Fab", icon:"F", types:["all","2d","3d","animation","audio","music","texture","map","ui","vfx","shader","code","props"],
+      description:"Marketplace for game-engine assets, environments, tools, and media.",
+      free:true, license:"Marketplace license",
+      url:q=>`https://www.fab.com/search?q=${encodeURIComponent(q)}`
+    },
+    {
+      id:"github", name:"GitHub", icon:"⌘", types:["code","shader","2d","3d","ui","vfx","map"],
+      description:"Open-source packs, engines, importers, generators, and templates.",
+      free:true, license:"Repository-specific",
+      url:q=>`https://github.com/search?q=${encodeURIComponent(q+" game assets")}&type=repositories`
+    }
+  ];
+
+
+  const megaThemes = [
+    ["zombie","Zombie characters"],["zombie horde","Zombie horde"],["infected","Infected creatures"],
+    ["undead","Undead enemies"],["mutant","Mutant creatures"],["monster","Horror monsters"],
+    ["zombie dog","Zombie animals"],["survivor","Survivor characters"],["hazmat survivor","Hazmat characters"],
+    ["blood splatter effect","Blood splatter VFX"],["blood decal","Blood decals"],["blood particle","Blood particles"],
+    ["damage overlay","Damage screen overlays"],["scratch overlay","Scratch overlays"],["infection effect","Infection effects"],
+    ["ruined city","Ruined city"],["abandoned hospital","Abandoned hospital"],["abandoned mall","Abandoned mall"],
+    ["post apocalypse","Post-apocalypse"],["graveyard","Graveyard"],["sewer tunnel","Sewer tunnels"],
+    ["abandoned house","Abandoned houses"],["broken road","Broken roads"],["wrecked vehicle","Wrecked vehicles"],
+    ["barricade","Barricades"],["survival camp","Survival camps"],["industrial ruins","Industrial ruins"],
+    ["foggy forest","Foggy forest"],["dark alley","Dark alleys"],["underground bunker","Underground bunker"],
+    ["horror ambience","Horror ambience"],["zombie sound","Zombie sounds"],["monster growl","Monster sounds"],
+    ["eerie wind","Eerie wind"],["heartbeat sound","Heartbeat sounds"],["footstep sound","Footsteps"],
+    ["door creak","Creaking doors"],["alarm sound","Alarm sounds"],["radio static","Radio static"],
+    ["horror music","Horror music"],["suspense music","Suspense music"],["dark drone","Dark drones"],
+    ["zombie animation","Zombie animations"],["crawl animation","Crawling animations"],["limp walk animation","Limp walking"],
+    ["idle animation","Idle animations"],["run animation","Running animations"],["hit reaction animation","Hit reactions"],
+    ["horror ui","Horror UI"],["health bar","Health bars"],["infection meter","Infection meters"],
+    ["inventory ui","Inventory UI"],["warning icon","Warning icons"],["blood font","Horror fonts"],
+    ["survival prop","Survival props"],["medical supplies","Medical supplies"],["food supplies","Food supplies"],
+    ["backpack","Backpacks"],["flashlight","Flashlights"],["radio prop","Radios"],
+    ["generator prop","Generators"],["crate prop","Crates"],["barrel prop","Barrels"],
+    ["broken furniture","Broken furniture"],["street light","Street lights"],["road sign","Road signs"],
+    ["fire effect","Fire VFX"],["smoke effect","Smoke VFX"],["dust particle","Dust particles"],
+    ["rain effect","Rain VFX"],["light flicker","Flickering lights"],["electric spark","Electric sparks"],
+    ["night sky hdri","Night HDRI"],["abandoned interior","Abandoned interiors"],["horror texture","Horror textures"],
+    ["rust texture","Rust textures"],["dirty wall texture","Dirty wall textures"],["cracked concrete","Cracked concrete"],
+    ["broken glass texture","Broken glass"],["warning tape texture","Warning tape"],["old metal texture","Old metal"]
+  ];
+
+  const megaAssetTypes = [
+    "all game assets","3D model","2D sprite","sprite sheet","animation","texture","PBR material",
+    "sound effect","music","environment","map","tileset","UI pack","icon pack","visual effect",
+    "particle effect","font","shader","PlayCanvas asset","game template"
+  ];
+
+  const megaStyles = [
+    "any style","low poly","realistic","stylized","cartoon","pixel art","voxel","PS1 style",
+    "mobile optimized","hand painted","PBR","dark horror"
+  ];
+
+  const megaFormats = [
+    "any format","GLB","glTF","FBX","OBJ","PNG","sprite sheet PNG","WAV","OGG","MP3",
+    "JSON","PlayCanvas","Unity compatible","Godot compatible","web game"
+  ];
+
+  const megaSources = [
+    {name:"itch.io Free Assets",icon:"🎮",note:"Free-tagged indie asset packs",url:q=>`https://itch.io/game-assets/free?search=${encodeURIComponent(q)}`},
+    {name:"OpenGameArt",icon:"🖼️",note:"Open-license community assets",url:q=>`https://opengameart.org/art-search?keys=${encodeURIComponent(q)}`},
+    {name:"Sketchfab",icon:"◈",note:"3D previews and downloadable models",url:q=>`https://sketchfab.com/search?type=models&q=${encodeURIComponent(q)}`},
+    {name:"Quaternius",icon:"Q",note:"CC0 3D packs and animations",url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:quaternius.com/packs "+q)}`},
+    {name:"Poly Pizza",icon:"🍕",note:"Free low-poly 3D models",url:q=>`https://poly.pizza/search/${encodeURIComponent(q)}`},
+    {name:"CraftPix Freebies",icon:"🎨",note:"Free 2D sprites, UI, and packs",url:q=>`https://craftpix.net/freebies/?s=${encodeURIComponent(q)}`},
+    {name:"Kenney",icon:"K",note:"Free game-ready packs",url:q=>`https://kenney.nl/assets?s=${encodeURIComponent(q)}`},
+    {name:"Freesound",icon:"〽️",note:"Creative Commons sound results",url:q=>`https://freesound.org/search/?q=${encodeURIComponent(q)}`},
+    {name:"Pixabay Sound Effects",icon:"🔉",note:"Free sound and music searches",url:q=>`https://pixabay.com/sound-effects/search/${encodeURIComponent(q)}/`},
+    {name:"Mixkit",icon:"M",note:"Free music, sounds, and effects",url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:mixkit.co/free-sound-effects "+q)}`},
+    {name:"Game-icons.net",icon:"♜",note:"Game interface icons",url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:game-icons.net "+q)}`},
+    {name:"Lospec",icon:"▦",note:"Pixel-art palettes and resources",url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:lospec.com "+q)}`},
+    {name:"Google Fonts",icon:"Aa",note:"Open fonts for game interfaces",url:q=>`https://fonts.google.com/?query=${encodeURIComponent(q)}`},
+    {name:"Godot Asset Library",icon:"🤖",note:"Open-source plugins and shaders",url:q=>`https://godotengine.org/asset-library/asset?filter=${encodeURIComponent(q)}`},
+    {name:"GitHub",icon:"⌘",note:"Open-source packs, tools, and code",url:q=>`https://github.com/search?q=${encodeURIComponent(q+" game asset")}&type=repositories`},
+    {name:"Fab Free Search",icon:"F",note:"Marketplace results—verify price and license",url:q=>`https://www.fab.com/search?q=${encodeURIComponent(q+" free")}`},
+    {name:"Unity Asset Store",icon:"◇",note:"Free and paid engine packages",url:q=>`https://assetstore.unity.com/?q=${encodeURIComponent(q+" free")}&orderBy=1`},
+    {name:"ambientCG",icon:"◌",note:"CC0 textures, materials, and models",url:q=>`https://ambientcg.com/list?search=${encodeURIComponent(q)}`},
+    {name:"Poly Haven",icon:"⬡",note:"CC0 HDRIs, textures, and models",url:q=>`https://www.google.com/search?q=${encodeURIComponent("site:polyhaven.com "+q)}`},
+    {name:"Internet Archive",icon:"🏛️",note:"Public and openly shared media—verify item rights",url:q=>`https://archive.org/search?query=${encodeURIComponent(q+" game asset")}`}
+  ];
+
+  const megaPresets = [
+    ["zombie","🧟 Zombies","Zombie characters","3D model","low poly","GLB"],
+    ["blood","🩸 Blood VFX","Blood splatter VFX","visual effect","realistic","PNG"],
+    ["ruins","🏚️ Ruined City","Ruined city","environment","realistic","glTF"],
+    ["sounds","🔊 Horror Audio","Zombie sounds","sound effect","dark horror","WAV"],
+    ["sprites","🎨 Zombie Sprites","Zombie characters","sprite sheet","pixel art","sprite sheet PNG"],
+    ["animations","🏃 Zombie Animations","Zombie animations","animation","realistic","FBX"],
+    ["ui","☣ Horror UI","Horror UI","UI pack","dark horror","PNG"],
+    ["textures","🧱 Horror Textures","Horror textures","PBR material","PBR","web game"],
+    ["hospital","🏥 Abandoned Hospital","Abandoned hospital","environment","realistic","GLB"],
+    ["fog","🌫️ Fog & Smoke","Smoke VFX","particle effect","realistic","PlayCanvas"],
+    ["survival","🎒 Survival Props","Survival props","3D model","low poly","glTF"],
+    ["music","🎵 Suspense Music","Suspense music","music","dark horror","MP3"]
+  ];
+
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => [...document.querySelectorAll(sel)];
+  const state = {
+    category:"all",
+    tab:"sources",
+    liveType:"images",
+    livePage:1,
+    query:"",
+    favorites:new Set(JSON.parse(localStorage.getItem("ag_favorites") || "[]")),
+    history:JSON.parse(localStorage.getItem("ag_history") || "[]"),
+    pcFiles:[],
+    codeCategory:"all",
+    codeSearch:"",
+    megaPreset:"zombie"
+  };
+
+  const safe = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  })[char]);
+
+  function toast(message){
+    const el=$("#toast");
+    el.textContent=message;
+    el.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer=setTimeout(()=>el.classList.remove("show"),2100);
+  }
+
+  function categoryName(id){
+    return categories.find(c=>c[0]===id)?.[1] || "All types";
+  }
+
+  function optionHtml(items){
+    return items.map(item=>{
+      const value=Array.isArray(item)?item[0]:item;
+      const label=Array.isArray(item)?item[1]:item;
+      return `<option value="${safe(value)}">${safe(label)}</option>`;
+    }).join("");
+  }
+
+  function buildMegaInterface(){
+    $("#megaTheme").innerHTML=optionHtml(megaThemes);
+    $("#megaAssetType").innerHTML=optionHtml(megaAssetTypes);
+    $("#megaStyle").innerHTML=optionHtml(megaStyles);
+    $("#megaFormat").innerHTML=optionHtml(megaFormats);
+    $("#megaSourceTotal").textContent=megaSources.length;
+    $("#megaThemeTotal").textContent=megaThemes.length;
+
+    const combinations=megaThemes.length*megaAssetTypes.length*megaStyles.length*megaFormats.length*megaSources.length;
+    $("#megaCombinationCount").textContent=combinations.toLocaleString()+"+";
+
+    $("#megaPresets").innerHTML=megaPresets.map(([id,label])=>
+      `<button class="mega-preset ${id==="zombie"?"active":""}" data-mega-preset="${safe(id)}">${safe(label)}</button>`
+    ).join("");
+
+    $$("[data-mega-preset]").forEach(button=>button.addEventListener("click",()=>{
+      const preset=megaPresets.find(item=>item[0]===button.dataset.megaPreset);
+      if(!preset) return;
+      state.megaPreset=preset[0];
+      $$(".mega-preset").forEach(item=>item.classList.toggle("active",item===button));
+      $("#megaTheme").value=preset[2];
+      $("#megaAssetType").value=preset[3];
+      $("#megaStyle").value=preset[4];
+      $("#megaFormat").value=preset[5];
+      buildMegaResults();
+    }));
+
+    $("#megaTheme").value="Zombie characters";
+    $("#megaAssetType").value="3D model";
+    $("#megaStyle").value="low poly";
+    $("#megaFormat").value="GLB";
+  }
+
+  function megaQuery(){
+    const theme=$("#megaTheme").value;
+    const type=$("#megaAssetType").value;
+    const style=$("#megaStyle").value;
+    const format=$("#megaFormat").value;
+    const custom=$("#megaCustom").value.trim();
+    return [
+      theme,
+      type!=="all game assets"?type:"",
+      style!=="any style"?style:"",
+      format!=="any format"?format:"",
+      custom,
+      "free downloadable game asset"
+    ].filter(Boolean).join(" ");
+  }
+
+  function buildMegaResults(){
+    const query=megaQuery();
+    $("#megaResultCount").textContent=`${megaSources.length} search routes`;
+    $("#megaResults").innerHTML=megaSources.map(source=>`
+      <article class="mega-card">
+        <div class="mega-card-top">
+          <div class="mega-card-icon">${safe(source.icon)}</div>
+          <div>
+            <h4>${safe(source.name)}</h4>
+            <p>${safe(source.note)}</p>
+          </div>
+        </div>
+        <div class="mega-query">${safe(query)}</div>
+        <div class="source-actions">
+          <a class="source-btn" href="${safe(source.url(query))}" target="_blank" rel="noopener">Search free assets</a>
+          <button class="secondary" data-copy-mega="${safe(query)}">Copy query</button>
+        </div>
+      </article>
+    `).join("");
+
+    $$("[data-copy-mega]").forEach(button=>button.addEventListener("click",async()=>{
+      try{
+        await copyText(button.dataset.copyMega);
+        toast("Search words copied");
+      }catch(error){
+        toast("Copy failed");
+      }
+    }));
+  }
+
+  function randomMegaSearch(){
+    const random=items=>items[Math.floor(Math.random()*items.length)];
+    $("#megaTheme").value=random(megaThemes)[0];
+    $("#megaAssetType").value=random(megaAssetTypes);
+    $("#megaStyle").value=random(megaStyles);
+    $("#megaFormat").value=random(megaFormats);
+    $("#megaCustom").value="";
+    buildMegaResults();
+  }
+
+  function buildCategories(){
+    $("#categorySelect").innerHTML=categories.map(([id,name])=>`<option value="${id}">${name}</option>`).join("");
+    $("#categoryChips").innerHTML=categories.map(([id,name,icon])=>
+      `<button class="chip ${id==="all"?"active":""}" data-category="${id}">${icon} ${name}</button>`
+    ).join("");
+
+    $("#categorySelect").addEventListener("change",e=>setCategory(e.target.value));
+    $$(".chip").forEach(btn=>btn.addEventListener("click",()=>setCategory(btn.dataset.category)));
+  }
+
+  function setCategory(id){
+    state.category=id;
+    $("#categorySelect").value=id;
+    $$(".chip").forEach(btn=>btn.classList.toggle("active",btn.dataset.category===id));
+    renderSources();
+    if(state.query && state.tab==="github") searchGitHub();
+  }
+
+  function getFilteredSources(){
+    const license=$("#licenseSelect").value;
+    return sources.filter(source=>{
+      const typeMatch=state.category==="all" || source.types.includes("all") || source.types.includes(state.category);
+      const licenseText=source.license.toLowerCase();
+      const licenseMatch=
+        license==="any" ||
+        (license==="cc0" && licenseText.includes("cc0")) ||
+        (license==="free" && source.free) ||
+        (license==="commercial");
+      return typeMatch && licenseMatch;
+    });
+  }
+
+  function renderSources(){
+    const list=getFilteredSources();
+    $("#sourceCount").textContent=`${list.length} libraries`;
+    const q=state.query.trim() || categoryName(state.category);
+    $("#sourceGrid").innerHTML=list.length ? list.map(source=>{
+      const on=state.favorites.has(source.id);
+      const typeLabels=source.types.filter(t=>t!=="all").slice(0,5).map(t=>categoryName(t));
+      return `
+      <article class="source-card">
+        <div class="source-top">
+          <div class="source-icon">${safe(source.icon)}</div>
+          <div class="source-info">
+            <h4>${safe(source.name)}</h4>
+            <p>${safe(source.description)}</p>
+          </div>
+        </div>
+        <div class="badges">
+          ${source.free?'<span class="badge free">Free options</span>':""}
+          <span class="badge license">${safe(source.license)}</span>
+          ${typeLabels.map(t=>`<span class="badge">${safe(t)}</span>`).join("")}
+        </div>
+        <div class="source-actions">
+          <a class="source-btn" href="${source.url(q)}" target="_blank" rel="noopener">Search ${safe(source.name)}</a>
+          <button class="secondary heart ${on?"on":""}" data-favorite="${source.id}" aria-label="Favorite ${safe(source.name)}">${on?"♥":"♡"}</button>
+        </div>
+      </article>`;
+    }).join("") : `<div class="empty"><strong>No matching libraries</strong>Try a different category or license preference.</div>`;
+
+    $$("[data-favorite]").forEach(btn=>btn.addEventListener("click",()=>toggleFavorite(btn.dataset.favorite)));
+  }
+
+  function toggleFavorite(id){
+    if(state.favorites.has(id)) state.favorites.delete(id); else state.favorites.add(id);
+    localStorage.setItem("ag_favorites",JSON.stringify([...state.favorites]));
+    renderSources();
+    renderDrawer();
+    toast(state.favorites.has(id)?"Library saved":"Library removed");
+  }
+
+  function setTab(tab){
+    state.tab=tab;
+    $$(".tab").forEach(btn=>btn.classList.toggle("active",btn.dataset.tab===tab));
+    $("#sourcesPanel").classList.toggle("hidden",tab!=="sources");
+    $("#livePanel").classList.toggle("hidden",tab!=="live");
+    $("#githubPanel").classList.toggle("hidden",tab!=="github");
+    $("#megaPanel").classList.toggle("hidden",tab!=="mega");
+    $("#gamePanel").classList.toggle("hidden",tab!=="game");
+    $("#playcanvasPanel").classList.toggle("hidden",tab!=="playcanvas");
+    $("#codesPanel").classList.toggle("hidden",tab!=="codes");
+    if(tab==="codes") renderPcCodes();
+    if(tab==="live" && state.query) searchLive(true);
+    if(tab==="github" && state.query) searchGitHub();
+  }
+
+  function addHistory(query){
+    const clean=query.trim();
+    if(!clean) return;
+    state.history=[{query:clean,category:state.category,time:Date.now()},...state.history.filter(h=>h.query.toLowerCase()!==clean.toLowerCase())].slice(0,12);
+    localStorage.setItem("ag_history",JSON.stringify(state.history));
+    renderDrawer();
+  }
+
+  function handleSearch(event){
+    event?.preventDefault();
+    const q=$("#searchInput").value.trim();
+    if(!q){toast("Type something to search");$("#searchInput").focus();return}
+    state.query=q;
+    state.livePage=1;
+    addHistory(q);
+    renderSources();
+    if(state.tab==="live") searchLive(true);
+    if(state.tab==="github") searchGitHub();
+    toast(`Searching for “${q}”`);
+  }
+
+  async function searchLive(reset=false){
+    if(!state.query) return;
+    if(reset) state.livePage=1;
+    const grid=$("#liveGrid");
+    if(reset) grid.innerHTML=`<div class="empty"><div class="spinner"></div><strong>Searching open media</strong>Loading preview results…</div>`;
+    const endpoint=state.liveType==="audio"?"audio":"images";
+    const license=$("#licenseSelect").value;
+    const licenseParam=license==="cc0"?"&license=cc0,pdm":"";
+    const url=`https://api.openverse.org/v1/${endpoint}/?q=${encodeURIComponent(state.query)}&page_size=18&page=${state.livePage}${licenseParam}`;
+    try{
+      const res=await fetch(url,{headers:{"Accept":"application/json"}});
+      if(!res.ok) throw new Error(`Request failed: ${res.status}`);
+      const data=await res.json();
+      const results=Array.isArray(data.results)?data.results:[];
+      if(reset) grid.innerHTML="";
+      if(!results.length && reset){
+        grid.innerHTML=`<div class="empty"><strong>No live previews found</strong>Try another search or use the Libraries tab.</div>`;
+      } else {
+        grid.insertAdjacentHTML("beforeend",results.map(renderLiveResult).join(""));
+      }
+      $("#liveCount").textContent=`Page ${state.livePage} · ${results.length} shown`;
+      bindRemoteQueueButtons();
+    }catch(error){
+      console.warn(error);
+      grid.innerHTML=`<div class="empty"><strong>Live preview unavailable</strong>The public search service may be rate-limited. The Libraries tab still works without an API key.</div>`;
+      $("#liveCount").textContent="Preview unavailable";
+    }
+  }
+
+  function renderLiveResult(item){
+    const title=item.title || "Untitled asset";
+    const creator=item.creator || "Unknown creator";
+    const license=[item.license,item.license_version].filter(Boolean).join(" ").toUpperCase() || "CHECK LICENSE";
+    const landing=item.foreign_landing_url || item.url || "#";
+    if(state.liveType==="audio"){
+      const audioUrl=item.url || item.audio_set?.frontend_url || "";
+      return `
+      <article class="result-card">
+        <div class="thumb"><div class="placeholder">🎧</div></div>
+        <div class="result-body">
+          <h4 title="${safe(title)}">${safe(title)}</h4>
+          <p>By ${safe(creator)}</p>
+          ${audioUrl?`<audio controls preload="none" src="${safe(audioUrl)}"></audio>`:""}
+          <div class="result-meta"><span>${safe(license)}</span><button class="queue-mini" data-queue-url="${safe(audioUrl)}" data-queue-title="${safe(title)}" data-queue-kind="audio" data-queue-creator="${safe(creator)}" data-queue-license="${safe(license)}" data-queue-page="${safe(landing)}">Add to queue</button><button class="direct-game-btn" data-game-url="${safe(audioUrl)}" data-game-title="${safe(title)}" data-game-kind="audio" data-game-license="${safe(license)}" data-game-page="${safe(landing)}">Add to game</button><a href="${safe(landing)}" target="_blank" rel="noopener">Asset page</a></div>
+        </div>
+      </article>`;
+    }
+    const image=item.thumbnail || item.url || "";
+    return `
+    <article class="result-card">
+      <div class="thumb">${image?`<img src="${safe(image)}" alt="${safe(title)}" loading="lazy" />`:'<div class="placeholder">🖼️</div>'}</div>
+      <div class="result-body">
+        <h4 title="${safe(title)}">${safe(title)}</h4>
+        <p>By ${safe(creator)}</p>
+        <div class="result-meta"><span>${safe(license)}</span><button class="queue-mini" data-queue-url="${safe(item.url || image)}" data-queue-title="${safe(title)}" data-queue-kind="image" data-queue-creator="${safe(creator)}" data-queue-license="${safe(license)}" data-queue-page="${safe(landing)}">Add to queue</button><button class="direct-game-btn" data-game-url="${safe(item.url || image)}" data-game-title="${safe(title)}" data-game-kind="image" data-game-license="${safe(license)}" data-game-page="${safe(landing)}">Add to game</button><a href="${safe(landing)}" target="_blank" rel="noopener">Asset page</a></div>
+      </div>
+    </article>`;
+  }
+
+  async function searchGitHub(){
+    if(!state.query) return;
+    const grid=$("#githubGrid");
+    grid.innerHTML=`<div class="empty"><div class="spinner"></div><strong>Searching GitHub</strong>Loading repositories…</div>`;
+    const category=state.category==="all"?"game assets":categoryName(state.category);
+    const q=`${state.query} ${category}`;
+    try{
+      const res=await fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(q)}&sort=stars&order=desc&per_page=18`,{
+        headers:{"Accept":"application/vnd.github+json"}
+      });
+      if(!res.ok) throw new Error(`Request failed: ${res.status}`);
+      const data=await res.json();
+      const items=Array.isArray(data.items)?data.items:[];
+      $("#githubCount").textContent=`${Number(data.total_count||0).toLocaleString()} found`;
+      grid.innerHTML=items.length?items.map(repo=>`
+        <article class="result-card">
+          <div class="thumb"><div class="placeholder">⌘</div></div>
+          <div class="result-body">
+            <h4 title="${safe(repo.full_name)}">${safe(repo.full_name)}</h4>
+            <p>${safe(repo.description || "No description provided.")}</p>
+            <div class="badges">
+              ${repo.language?`<span class="badge">${safe(repo.language)}</span>`:""}
+              <span class="badge">★ ${Number(repo.stargazers_count||0).toLocaleString()}</span>
+              ${repo.license?.spdx_id?`<span class="badge license">${safe(repo.license.spdx_id)}</span>`:""}
+            </div>
+            <div class="result-meta"><span>Updated ${safe(String(repo.updated_at||"").slice(0,10))}</span><a href="${safe(repo.html_url)}" target="_blank" rel="noopener">Open repo</a></div>
+          </div>
+        </article>
+      `).join(""):`<div class="empty"><strong>No repositories found</strong>Try a broader search.</div>`;
+    }catch(error){
+      console.warn(error);
+      grid.innerHTML=`<div class="empty"><strong>GitHub search unavailable</strong>The anonymous API limit may have been reached. Use the GitHub library card instead.</div>`;
+      $("#githubCount").textContent="Search unavailable";
+    }
+  }
+
+
+  function formatBytes(bytes){
+    if(!Number.isFinite(bytes) || bytes<=0) return "0 B";
+    const units=["B","KB","MB","GB"];
+    const index=Math.min(Math.floor(Math.log(bytes)/Math.log(1024)),units.length-1);
+    return `${(bytes/Math.pow(1024,index)).toFixed(index?1:0)} ${units[index]}`;
+  }
+
+  function cleanName(value){
+    return String(value || "asset")
+      .replace(/[\\/:*?"<>|]+/g,"-")
+      .replace(/\s+/g," ")
+      .trim()
+      .slice(0,120) || "asset";
+  }
+
+  function fileBase(name){
+    return cleanName(String(name || "asset").replace(/\.[^.]+$/,""));
+  }
+
+  function extensionOf(name){
+    const match=String(name || "").toLowerCase().match(/\.([a-z0-9]+)(?:[?#].*)?$/);
+    return match ? match[1] : "";
+  }
+
+  function detectAssetType(name){
+    const ext=extensionOf(name);
+    if(["glb","gltf","fbx","obj","dae","ply"].includes(ext)) return {type:"3D / container",icon:"🧊"};
+    if(["png","jpg","jpeg","webp","gif","bmp","tga","hdr","exr","ktx","ktx2"].includes(ext)) return {type:"Texture / image",icon:"🖼️"};
+    if(["wav","mp3","ogg","m4a","flac"].includes(ext)) return {type:"Audio",icon:"🎧"};
+    if(["js","mjs"].includes(ext)) return {type:"Script",icon:"🧩"};
+    if(["vert","frag","glsl","wgsl"].includes(ext)) return {type:"Shader",icon:"🌈"};
+    if(["ttf","otf","woff","woff2"].includes(ext)) return {type:"Font",icon:"🔤"};
+    if(ext==="json") return {type:"JSON",icon:"{ }"};
+    if(ext==="css") return {type:"CSS",icon:"🎨"};
+    if(ext==="html") return {type:"HTML",icon:"🌐"};
+    if(["bin","txt"].includes(ext)) return {type:"Data",icon:"📄"};
+    return {type:"Other asset",icon:"📦"};
+  }
+
+  function addPcFiles(files, metadata={}){
+    const incoming=[...files].filter(file=>file && file.name);
+    let added=0;
+    incoming.forEach(file=>{
+      const duplicate=state.pcFiles.some(item=>
+        item.file.name===file.name &&
+        item.file.size===file.size &&
+        item.file.lastModified===file.lastModified
+      );
+      if(!duplicate){
+        state.pcFiles.push({
+          file,
+          sourcePage:metadata.sourcePage || "",
+          creator:metadata.creator || "",
+          license:metadata.license || ""
+        });
+        added++;
+      }
+    });
+    renderPcQueue();
+    if(added) toast(`${added} file${added===1?"":"s"} added to PlayCanvas queue`);
+    else if(incoming.length) toast("Those files are already queued");
+  }
+
+  function jsString(value){
+    return JSON.stringify(String(value ?? ""));
+  }
+
+  function codeCategoryFor(manifestItem){
+    const ext=extensionOf(manifestItem.fileName);
+    if(["glb","gltf","fbx","obj","dae","ply"].includes(ext)) return "model";
+    if(["png","jpg","jpeg","webp","gif","bmp","tga","hdr","exr","ktx","ktx2"].includes(ext)) return "texture";
+    if(["wav","mp3","ogg","m4a","flac"].includes(ext)) return "audio";
+    if(["ttf","otf","woff","woff2"].includes(ext)) return "font";
+    if(ext==="json") return "json";
+    if(["js","mjs"].includes(ext)) return "script";
+    if(["vert","frag","glsl","wgsl"].includes(ext)) return "shader";
+    if(["html","css","txt"].includes(ext)) return "text";
+    return "other";
+  }
+
+  function codeCategoryLabel(category){
+    return {
+      model:"Models",
+      texture:"Textures",
+      audio:"Audio",
+      font:"Fonts",
+      json:"JSON",
+      script:"Scripts",
+      shader:"Shaders",
+      text:"Text",
+      other:"Other"
+    }[category] || "All Codes";
+  }
+
+  function assetCodeFor(manifestItem){
+    const key=manifestItem.key;
+    const name=manifestItem.fileName;
+    const ext=extensionOf(name);
+    const baseGet=`const asset = this.app.autoAssets.get(${jsString(key)});`;
+
+    if(["glb","gltf","fbx","obj","dae","ply"].includes(ext)){
+      return `// Spawn the 3D model: ${name}
+const modelEntity = this.app.autoAssets.spawn(${jsString(key)}, this.entity);
+
+if (modelEntity) {
+  modelEntity.setLocalPosition(0, 0, 0);
+  modelEntity.setLocalEulerAngles(0, 0, 0);
+  modelEntity.setLocalScale(1, 1, 1);
+}`;
+    }
+
+    if(["png","jpg","jpeg","webp","gif","bmp","tga","hdr","exr","ktx","ktx2"].includes(ext)){
+      return `// Apply the texture/image: ${name}
+this.app.autoAssets.whenReady(${jsString(key)}, (asset) => {
+  const material = new pc.StandardMaterial();
+  material.diffuseMap = asset.resource;
+  material.update();
+
+  if (this.entity.render) {
+    this.entity.render.material = material;
+  } else {
+    console.warn("Add a Render Component to this Entity first.");
+  }
+});`;
+    }
+
+    if(["wav","mp3","ogg","m4a","flac"].includes(ext)){
+      return `// Load and play the sound: ${name}
+const soundAsset = this.app.autoAssets.get(${jsString(key)});
+
+if (!this.entity.sound) {
+  this.entity.addComponent("sound");
+}
+
+this.entity.sound.addSlot(${jsString(key)}, {
+  asset: soundAsset.id,
+  autoPlay: false,
+  loop: false,
+  volume: 1
+});
+
+this.entity.sound.play(${jsString(key)});`;
+    }
+
+    if(["ttf","otf","woff","woff2"].includes(ext)){
+      return `// Apply the font: ${name}
+const fontAsset = this.app.autoAssets.get(${jsString(key)});
+
+if (this.entity.element) {
+  this.entity.element.fontAsset = fontAsset;
+} else {
+  console.warn("Add an Element Component to this Entity first.");
+}`;
+    }
+
+    if(ext==="json"){
+      return `// Read the JSON asset: ${name}
+this.app.autoAssets.whenReady(${jsString(key)}, (asset) => {
+  const data = asset.resource;
+  console.log("JSON data:", data);
+});`;
+    }
+
+    if(["js","mjs"].includes(ext)){
+      return `// Script file: ${name}
+// Add this script through the Entity's Script Component in the PlayCanvas Editor.
+${baseGet}
+console.log("Script asset:", asset);
+
+// The script type name comes from pc.createScript(...) or static scriptName
+// inside the uploaded script file.`;
+    }
+
+    if(["vert","frag","glsl","wgsl"].includes(ext)){
+      return `// Get the shader source: ${name}
+this.app.autoAssets.whenReady(${jsString(key)}, (asset) => {
+  const shaderSource = asset.resource;
+  console.log("Shader source:", shaderSource);
+
+  // Use shaderSource when building your custom pc.Shader.
+});`;
+    }
+
+    if(["html","css","txt"].includes(ext)){
+      return `// Read the text asset: ${name}
+this.app.autoAssets.whenReady(${jsString(key)}, (asset) => {
+  const text = asset.resource;
+  console.log("Text asset:", text);
+});`;
+    }
+
+    return `// Get the asset: ${name}
+${baseGet}
+
+if (asset) {
+  this.app.assets.load(asset);
+  asset.ready((loadedAsset) => {
+    console.log("Asset ready:", loadedAsset);
+  });
+}`;
+  }
+
+  function buildAllAssetCodesText(){
+    const manifest=manifestForQueue();
+    if(!manifest.length) return "";
+    return `// ASSET GALAXY — PLAYCANVAS ASSET CODES
+// Add autoAssetLoader.js or autoAssetLoader.mjs to a Script Component first.
+// Generated: ${new Date().toISOString()}
+
+${manifest.map((item,index)=>`// ============================================================
+// ${index+1}. ${item.fileName}
+// Asset key: ${item.key}
+// ============================================================
+${assetCodeFor(item)}`).join("\n\n")}`;
+  }
+
+  function copyText(text){
+    if(!text) return Promise.reject(new Error("Nothing to copy"));
+    if(navigator.clipboard && window.isSecureContext){
+      return navigator.clipboard.writeText(text);
+    }
+
+    return new Promise((resolve,reject)=>{
+      const textarea=document.createElement("textarea");
+      textarea.value=text;
+      textarea.setAttribute("readonly","");
+      textarea.style.position="fixed";
+      textarea.style.opacity="0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try{
+        const copied=document.execCommand("copy");
+        textarea.remove();
+        copied ? resolve() : reject(new Error("Copy failed"));
+      }catch(error){
+        textarea.remove();
+        reject(error);
+      }
+    });
+  }
+
+  function renderPcCodes(){
+    const allManifest=manifestForQueue();
+    const search=String(state.codeSearch || "").trim().toLowerCase();
+    const manifest=allManifest.filter(item=>{
+      const category=codeCategoryFor(item);
+      const categoryMatch=state.codeCategory==="all" || category===state.codeCategory;
+      const text=`${item.fileName} ${item.key} ${item.type} ${category}`.toLowerCase();
+      const searchMatch=!search || text.includes(search);
+      return categoryMatch && searchMatch;
+    });
+
+    const grid=$("#pcCodeGrid");
+    if(!grid) return;
+
+    const summary=$("#assetCodeSummary");
+    if(summary){
+      const counts={};
+      allManifest.forEach(item=>{
+        const category=codeCategoryFor(item);
+        counts[category]=(counts[category] || 0)+1;
+      });
+      summary.innerHTML=allManifest.length
+        ? `<span>${allManifest.length} total</span>`+
+          Object.entries(counts).map(([category,count])=>
+            `<span>${safe(codeCategoryLabel(category))}: ${count}</span>`
+          ).join("")
+        : `<span>0 generated codes</span>`;
+    }
+
+    $$(".code-category").forEach(button=>
+      button.classList.toggle("active",button.dataset.codeCategory===state.codeCategory)
+    );
+
+    grid.innerHTML=manifest.length ? manifest.map((item,index)=>{
+      const code=assetCodeFor(item);
+      const actualIndex=allManifest.indexOf(item);
+      const category=codeCategoryFor(item);
+      return `
+        <article class="pc-code-card" data-code-type="${safe(category)}">
+          <div class="pc-code-head">
+            <div class="pc-code-title">
+              <strong title="${safe(item.fileName)}">${safe(item.fileName)}</strong>
+              <small>${safe(codeCategoryLabel(category))} · ${safe(item.type)}</small>
+              <span class="pc-key">key: ${safe(item.key)}</span>
+            </div>
+            <button class="copy-code" data-copy-code="${actualIndex}">Copy code</button>
+          </div>
+          <pre class="pc-code"><code>${safe(code)}</code></pre>
+        </article>`;
+    }).join("") : `<div class="empty"><strong>No matching asset codes</strong>${allManifest.length ? "Try another code category or clear the search." : "Add files in the PlayCanvas category to generate code automatically."}</div>`;
+
+    $$("[data-copy-code]").forEach(button=>button.addEventListener("click",async()=>{
+      const item=allManifest[Number(button.dataset.copyCode)];
+      if(!item) return;
+      try{
+        await copyText(assetCodeFor(item));
+        toast(`Code copied for ${item.fileName}`);
+      }catch(error){
+        console.warn(error);
+        toast("Copy failed. Press and hold the code to copy it.");
+      }
+    }));
+  }
+
+  function renderPcQueue(){
+    const total=state.pcFiles.reduce((sum,item)=>sum+item.file.size,0);
+    $("#pcQueueCount").textContent=`${state.pcFiles.length} file${state.pcFiles.length===1?"":"s"} · ${formatBytes(total)}`;
+    $("#pcQueue").innerHTML=state.pcFiles.length ? state.pcFiles.map((item,index)=>{
+      const info=detectAssetType(item.file.name);
+      return `
+        <div class="pc-file">
+          <div class="pc-file-icon">${info.icon}</div>
+          <div class="pc-file-info">
+            <strong title="${safe(item.file.name)}">${safe(item.file.name)}</strong>
+            <small>${safe(info.type)} · ${formatBytes(item.file.size)}${item.license?` · ${safe(item.license)}`:""}</small>
+          </div>
+          <button class="pc-remove" data-pc-remove="${index}" aria-label="Remove ${safe(item.file.name)}">✕</button>
+        </div>`;
+    }).join("") : `<div class="empty"><strong>No files queued</strong>Choose files from Downloads or queue a supported live result.</div>`;
+
+    $$("[data-pc-remove]").forEach(button=>button.addEventListener("click",()=>{
+      state.pcFiles.splice(Number(button.dataset.pcRemove),1);
+      renderPcQueue();
+    }));
+
+    renderPcCodes();
+  }
+
+  function mimeExtension(mime,kind,url){
+    const direct=extensionOf(url);
+    if(direct && direct.length<=5) return direct;
+    const map={
+      "image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif",
+      "audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/ogg":"ogg",
+      "audio/mp4":"m4a","application/json":"json"
+    };
+    return map[String(mime || "").toLowerCase()] || (kind==="audio"?"mp3":"jpg");
+  }
+
+  async function queueRemoteAsset(button){
+    const url=button.dataset.queueUrl;
+    if(!url){toast("This preview has no downloadable file URL");return}
+    const original=button.textContent;
+    button.disabled=true;
+    button.textContent="Adding…";
+    try{
+      const response=await fetch(url,{mode:"cors"});
+      if(!response.ok) throw new Error(`Download failed: ${response.status}`);
+      const blob=await response.blob();
+      if(blob.size>100*1024*1024) throw new Error("File is larger than the 100 MB phone queue limit");
+      let name=cleanName(button.dataset.queueTitle || "asset");
+      if(!extensionOf(name)) name+=`.`+mimeExtension(blob.type,button.dataset.queueKind,url);
+      const file=new File([blob],name,{type:blob.type,lastModified:Date.now()});
+      addPcFiles([file],{
+        sourcePage:button.dataset.queuePage || "",
+        creator:button.dataset.queueCreator || "",
+        license:button.dataset.queueLicense || ""
+      });
+      setTab("playcanvas");
+    }catch(error){
+      console.warn(error);
+      toast("That site blocked automatic queuing. Download it normally, then choose it from Downloads.");
+    }finally{
+      button.disabled=false;
+      button.textContent=original;
+    }
+  }
+
+  function bindRemoteQueueButtons(){
+    $$("[data-queue-url]").forEach(button=>{
+      if(button.dataset.bound) return;
+      button.dataset.bound="1";
+      button.addEventListener("click",()=>queueRemoteAsset(button));
+    });
+  }
+
+  function manifestForQueue(){
+    const used={};
+    return state.pcFiles.map(item=>{
+      const base=fileBase(item.file.name);
+      let key=base.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || "asset";
+      used[key]=(used[key] || 0)+1;
+      if(used[key]>1) key+=`_${used[key]}`;
+      const detected=detectAssetType(item.file.name);
+      return {
+        key,
+        assetName:base,
+        fileName:item.file.name,
+        type:detected.type,
+        size:item.file.size,
+        sourcePage:item.sourcePage || "",
+        creator:item.creator || "",
+        license:item.license || ""
+      };
+    });
+  }
+
+  function makeClassicLoader(manifest,tag){
+    const data=JSON.stringify(manifest,null,2);
+    return `// Generated by Asset Galaxy
+// Upload this file to PlayCanvas and add "autoAssetLoader" to a Script Component.
+// Other scripts can use: this.app.autoAssets.get("asset_key");
+
+var AutoAssetLoader = pc.createScript('autoAssetLoader');
+
+AutoAssetLoader.attributes.add('spawnContainersOnStart', {
+    type: 'boolean',
+    default: false,
+    title: 'Spawn 3D Containers On Start'
+});
+
+AutoAssetLoader.prototype.initialize = function () {
+    this.manifest = ${data};
+    this.assetMap = {};
+    this.app.autoAssets = this;
+
+    for (var i = 0; i < this.manifest.length; i++) {
+        var item = this.manifest[i];
+        var asset =
+            this.app.assets.find(item.assetName) ||
+            this.app.assets.find(item.fileName);
+
+        if (!asset) {
+            console.warn('[Asset Galaxy] Missing PlayCanvas asset:', item.fileName);
+            continue;
+        }
+
+        this.assetMap[item.key] = asset;
+        asset.tags.add('${tag}');
+
+        if (!asset.loaded) {
+            this.app.assets.load(asset);
+        }
+
+        if (this.spawnContainersOnStart && asset.type === 'container') {
+            this.spawn(item.key, this.entity);
+        }
+    }
+
+    this.app.fire('assetGalaxy:ready', this);
+    console.log('[Asset Galaxy] Ready. Keys:', Object.keys(this.assetMap));
+};
+
+AutoAssetLoader.prototype.get = function (key) {
+    return this.assetMap[key] || null;
+};
+
+AutoAssetLoader.prototype.whenReady = function (key, callback) {
+    var asset = this.get(key);
+    if (!asset) {
+        console.warn('[Asset Galaxy] Unknown asset key:', key);
+        return;
+    }
+
+    if (asset.loaded && asset.resource) {
+        callback(asset);
+        return;
+    }
+
+    asset.ready(callback);
+    this.app.assets.load(asset);
+};
+
+AutoAssetLoader.prototype.spawn = function (key, parent) {
+    var asset = this.get(key);
+    var target = parent || this.app.root;
+
+    if (!asset) {
+        console.warn('[Asset Galaxy] Cannot spawn unknown key:', key);
+        return null;
+    }
+
+    var createEntity = function () {
+        if (asset.type === 'container' &&
+            asset.resource &&
+            asset.resource.instantiateRenderEntity) {
+            var entity = asset.resource.instantiateRenderEntity({
+                castShadows: true,
+                receiveShadows: true
+            });
+            target.addChild(entity);
+            return entity;
+        }
+
+        console.warn('[Asset Galaxy] Asset is not a loaded 3D container:', key, asset.type);
+        return null;
+    };
+
+    if (asset.loaded && asset.resource) {
+        return createEntity();
+    }
+
+    asset.ready(createEntity);
+    this.app.assets.load(asset);
+    return null;
+};
+`;
+  }
+
+  function makeEsmLoader(manifest,tag){
+    const data=JSON.stringify(manifest,null,2);
+    return `// Generated by Asset Galaxy
+// Upload this file to PlayCanvas and add "autoAssetLoaderEsm" to a Script Component.
+// Other scripts can use: this.app.autoAssets.get("asset_key");
+
+import { Script } from 'playcanvas';
+
+export class AutoAssetLoaderEsm extends Script {
+    static scriptName = 'autoAssetLoaderEsm';
+
+    initialize() {
+        this.manifest = ${data};
+        this.assetMap = {};
+        this.app.autoAssets = this;
+
+        for (const item of this.manifest) {
+            const asset =
+                this.app.assets.find(item.assetName) ||
+                this.app.assets.find(item.fileName);
+
+            if (!asset) {
+                console.warn('[Asset Galaxy] Missing PlayCanvas asset:', item.fileName);
+                continue;
+            }
+
+            this.assetMap[item.key] = asset;
+            asset.tags.add('${tag}');
+
+            if (!asset.loaded) {
+                this.app.assets.load(asset);
+            }
+        }
+
+        this.app.fire('assetGalaxy:ready', this);
+        console.log('[Asset Galaxy] Ready. Keys:', Object.keys(this.assetMap));
+    }
+
+    get(key) {
+        return this.assetMap[key] || null;
+    }
+
+    whenReady(key, callback) {
+        const asset = this.get(key);
+        if (!asset) {
+            console.warn('[Asset Galaxy] Unknown asset key:', key);
+            return;
+        }
+
+        if (asset.loaded && asset.resource) {
+            callback(asset);
+            return;
+        }
+
+        asset.ready(callback);
+        this.app.assets.load(asset);
+    }
+
+    spawn(key, parent = this.app.root) {
+        const asset = this.get(key);
+
+        if (!asset) {
+            console.warn('[Asset Galaxy] Cannot spawn unknown key:', key);
+            return null;
+        }
+
+        const createEntity = () => {
+            if (asset.type === 'container' &&
+                asset.resource &&
+                asset.resource.instantiateRenderEntity) {
+                const entity = asset.resource.instantiateRenderEntity({
+                    castShadows: true,
+                    receiveShadows: true
+                });
+                parent.addChild(entity);
+                return entity;
+            }
+
+            console.warn('[Asset Galaxy] Asset is not a loaded 3D container:', key, asset.type);
+            return null;
+        };
+
+        if (asset.loaded && asset.resource) {
+            return createEntity();
+        }
+
+        asset.ready(createEntity);
+        this.app.assets.load(asset);
+        return null;
+    }
+}
+`;
+  }
+
+  const crcTable=(()=>{
+    const table=new Uint32Array(256);
+    for(let n=0;n<256;n++){
+      let c=n;
+      for(let k=0;k<8;k++) c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
+      table[n]=c>>>0;
+    }
+    return table;
+  })();
+
+  function crc32(bytes){
+    let crc=0xffffffff;
+    for(let i=0;i<bytes.length;i++) crc=crcTable[(crc^bytes[i])&0xff]^(crc>>>8);
+    return (crc^0xffffffff)>>>0;
+  }
+
+  function dosDateTime(value){
+    const d=new Date(value || Date.now());
+    const year=Math.max(1980,d.getFullYear());
+    return {
+      time:(d.getHours()<<11)|(d.getMinutes()<<5)|Math.floor(d.getSeconds()/2),
+      date:((year-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate()
+    };
+  }
+
+  async function createZip(entries){
+    const encoder=new TextEncoder();
+    const localParts=[];
+    const centralParts=[];
+    let offset=0;
+    let centralSize=0;
+
+    for(const entry of entries){
+      const nameBytes=encoder.encode(entry.name.replace(/^\/+/,""));
+      const bytes=entry.data instanceof Uint8Array
+        ? entry.data
+        : new Uint8Array(await entry.data.arrayBuffer());
+      const crc=crc32(bytes);
+      const stamp=dosDateTime(entry.date);
+      const local=new Uint8Array(30+nameBytes.length);
+      const lv=new DataView(local.buffer);
+
+      lv.setUint32(0,0x04034b50,true);
+      lv.setUint16(4,20,true);
+      lv.setUint16(6,0x0800,true);
+      lv.setUint16(8,0,true);
+      lv.setUint16(10,stamp.time,true);
+      lv.setUint16(12,stamp.date,true);
+      lv.setUint32(14,crc,true);
+      lv.setUint32(18,bytes.length,true);
+      lv.setUint32(22,bytes.length,true);
+      lv.setUint16(26,nameBytes.length,true);
+      lv.setUint16(28,0,true);
+      local.set(nameBytes,30);
+      localParts.push(local,bytes);
+
+      const central=new Uint8Array(46+nameBytes.length);
+      const cv=new DataView(central.buffer);
+      cv.setUint32(0,0x02014b50,true);
+      cv.setUint16(4,20,true);
+      cv.setUint16(6,20,true);
+      cv.setUint16(8,0x0800,true);
+      cv.setUint16(10,0,true);
+      cv.setUint16(12,stamp.time,true);
+      cv.setUint16(14,stamp.date,true);
+      cv.setUint32(16,crc,true);
+      cv.setUint32(20,bytes.length,true);
+      cv.setUint32(24,bytes.length,true);
+      cv.setUint16(28,nameBytes.length,true);
+      cv.setUint16(30,0,true);
+      cv.setUint16(32,0,true);
+      cv.setUint16(34,0,true);
+      cv.setUint16(36,0,true);
+      cv.setUint32(38,0,true);
+      cv.setUint32(42,offset,true);
+      central.set(nameBytes,46);
+      centralParts.push(central);
+
+      offset+=local.length+bytes.length;
+      centralSize+=central.length;
+    }
+
+    const end=new Uint8Array(22);
+    const ev=new DataView(end.buffer);
+    ev.setUint32(0,0x06054b50,true);
+    ev.setUint16(4,0,true);
+    ev.setUint16(6,0,true);
+    ev.setUint16(8,entries.length,true);
+    ev.setUint16(10,entries.length,true);
+    ev.setUint32(12,centralSize,true);
+    ev.setUint32(16,offset,true);
+    ev.setUint16(20,0,true);
+
+    return new Blob([...localParts,...centralParts,end],{type:"application/zip"});
+  }
+
+  function saveBlob(blob,name){
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement("a");
+    link.href=url;
+    link.download=name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+  }
+
+  async function buildPlayCanvasPack(){
+    if(!state.pcFiles.length){
+      toast("Add at least one downloaded asset first");
+      setTab("playcanvas");
+      return;
+    }
+
+    const total=state.pcFiles.reduce((sum,item)=>sum+item.file.size,0);
+    if(total>180*1024*1024 && !confirm("This pack is larger than 180 MB and may use a lot of phone memory. Build it anyway?")) return;
+
+    const button=$("#buildPcPack");
+    const old=button.textContent;
+    button.disabled=true;
+    button.textContent="Building…";
+
+    try{
+      const folder=cleanName($("#pcFolderName").value || "ImportedAssets").replace(/\s+/g,"_");
+      const tag=cleanName($("#pcPackTag").value || "imported-asset").toLowerCase().replace(/\s+/g,"-");
+      const notes=$("#pcPackNotes").value.trim();
+      const manifest=manifestForQueue();
+      const entries=[];
+
+      state.pcFiles.forEach(item=>{
+        entries.push({
+          name:`${folder}/assets/${cleanName(item.file.name)}`,
+          data:item.file,
+          date:item.file.lastModified
+        });
+      });
+
+      const manifestDocument={
+        generatedAt:new Date().toISOString(),
+        packName:folder,
+        playcanvasTag:tag,
+        notes,
+        assets:manifest
+      };
+
+      const instructions=`PLAYCANVAS PHONE IMPORT
+
+1. Extract this ZIP using Samsung My Files or another ZIP extractor.
+2. Open your PlayCanvas project and open the Assets panel.
+3. Create a folder named ${folder}.
+4. Upload every file inside ${folder}/assets into that folder.
+5. Upload ONE loader script:
+   - scripts/autoAssetLoader.js for classic PlayCanvas scripts, OR
+   - scripts/autoAssetLoader.mjs for modern ESM scripts.
+6. Select an Entity in the Hierarchy.
+7. Add a Script Component.
+8. Add autoAssetLoader (classic) or autoAssetLoaderEsm (ESM).
+9. From another script, access an asset with:
+   this.app.autoAssets.get("asset_key");
+10. To instantiate an uploaded GLB/container:
+   this.app.autoAssets.spawn("asset_key", this.entity);
+
+Open manifest/playcanvas-assets.json to see every generated key.
+Open ASSET_CODES.txt or scripts/assetCodes.js to see ready-to-copy code for every asset.
+
+IMPORTANT
+- Keep related .gltf, .bin, and texture files together when uploading.
+- PlayCanvas processes imported models and may create container, render, material, and texture assets.
+- Check each downloaded asset's exact license before publishing your game.
+- The browser cannot automatically read files downloaded in another tab. You must choose them from Downloads.
+- PlayCanvas's public REST create-asset endpoint does not currently upload every general asset format, so this pack uses the reliable Editor upload workflow.
+
+PACK NOTES
+${notes || "(none)"}
+`;
+
+      const encode=text=>new TextEncoder().encode(text);
+      const allAssetCodes=buildAllAssetCodesText();
+      entries.push(
+        {name:`${folder}/manifest/playcanvas-assets.json`,data:encode(JSON.stringify(manifestDocument,null,2))},
+        {name:`${folder}/scripts/autoAssetLoader.js`,data:encode(makeClassicLoader(manifest,tag))},
+        {name:`${folder}/scripts/autoAssetLoader.mjs`,data:encode(makeEsmLoader(manifest,tag))},
+        {name:`${folder}/scripts/assetCodes.js`,data:encode(allAssetCodes)},
+        {name:`${folder}/ASSET_CODES.txt`,data:encode(allAssetCodes)},
+        {name:`${folder}/README_IMPORT.txt`,data:encode(instructions)}
+      );
+
+      const zip=await createZip(entries);
+      saveBlob(zip,`${folder}-PlayCanvas-Pack.zip`);
+      toast("PlayCanvas pack downloaded");
+    }catch(error){
+      console.error(error);
+      toast("The pack could not be built. Try fewer or smaller files.");
+    }finally{
+      button.disabled=false;
+      button.textContent=old;
+    }
+  }
+
+  function renderDrawer(){
+    const favs=sources.filter(s=>state.favorites.has(s.id));
+    $("#favoritesList").innerHTML=favs.length?favs.map(s=>`
+      <button class="history-item" data-open-source="${s.id}">
+        <span><strong>${safe(s.name)}</strong><br><small>${safe(s.license)}</small></span><span>↗</span>
+      </button>`).join(""):`<div class="empty" style="padding:18px 10px">No favorites yet.</div>`;
+
+    $("#historyList").innerHTML=state.history.length?state.history.map((h,i)=>`
+      <button class="history-item" data-history="${i}">
+        <span><strong>${safe(h.query)}</strong><br><small>${safe(categoryName(h.category))}</small></span><span>↻</span>
+      </button>`).join(""):`<div class="empty" style="padding:18px 10px">No recent searches.</div>`;
+
+    $$("[data-history]").forEach(btn=>btn.addEventListener("click",()=>{
+      const h=state.history[Number(btn.dataset.history)];
+      $("#searchInput").value=h.query; state.query=h.query; setCategory(h.category); closeDrawer(); handleSearch();
+    }));
+    $$("[data-open-source]").forEach(btn=>btn.addEventListener("click",()=>{
+      const s=sources.find(x=>x.id===btn.dataset.openSource);
+      if(s) window.open(s.url(state.query || categoryName(state.category)),"_blank","noopener");
+    }));
+  }
+
+  function openDrawer(){
+    renderDrawer();
+    $("#drawer").classList.remove("hidden");
+    $("#drawer").setAttribute("aria-hidden","false");
+  }
+  function closeDrawer(){
+    $("#drawer").classList.add("hidden");
+    $("#drawer").setAttribute("aria-hidden","true");
+  }
+
+  buildCategories();
+  buildMegaInterface();
+  renderSources();
+  renderDrawer();
+
+  const pcInput=$("#pcFileInput");
+  const pcDrop=$("#pcDropZone");
+
+  pcDrop.addEventListener("click",()=>pcInput.click());
+  pcDrop.addEventListener("keydown",event=>{
+    if(event.key==="Enter" || event.key===" "){
+      event.preventDefault();
+      pcInput.click();
+    }
+  });
+  pcInput.addEventListener("change",()=>{
+    addPcFiles(pcInput.files);
+    pcInput.value="";
+  });
+  ["dragenter","dragover"].forEach(name=>pcDrop.addEventListener(name,event=>{
+    event.preventDefault();
+    pcDrop.classList.add("drag");
+  }));
+  ["dragleave","drop"].forEach(name=>pcDrop.addEventListener(name,event=>{
+    event.preventDefault();
+    pcDrop.classList.remove("drag");
+  }));
+  pcDrop.addEventListener("drop",event=>addPcFiles(event.dataTransfer.files));
+  $("#clearPcQueue").addEventListener("click",()=>{
+    state.pcFiles=[];
+    renderPcQueue();
+    toast("PlayCanvas queue cleared");
+  });
+  $("#buildPcPack").addEventListener("click",buildPlayCanvasPack);
+  $("#openAssetCodesCategory").addEventListener("click",()=>setTab("codes"));
+  $$(".code-category").forEach(button=>button.addEventListener("click",()=>{
+    state.codeCategory=button.dataset.codeCategory;
+    renderPcCodes();
+  }));
+  $("#assetCodeSearch").addEventListener("input",event=>{
+    state.codeSearch=event.target.value;
+    renderPcCodes();
+  });
+  $("#clearAssetCodeSearch").addEventListener("click",()=>{
+    state.codeSearch="";
+    $("#assetCodeSearch").value="";
+    renderPcCodes();
+  });
+  $("#copyAllAssetCodes").addEventListener("click",async()=>{
+    const codes=buildAllAssetCodesText();
+    if(!codes){
+      toast("Add files before copying asset codes");
+      return;
+    }
+    try{
+      await copyText(codes);
+      toast("All asset codes copied");
+    }catch(error){
+      console.warn(error);
+      toast("Copy failed. Use Download codes instead.");
+    }
+  });
+  $("#downloadAssetCodes").addEventListener("click",()=>{
+    const codes=buildAllAssetCodesText();
+    if(!codes){
+      toast("Add files before downloading asset codes");
+      return;
+    }
+    const blob=new Blob([codes],{type:"text/javascript;charset=utf-8"});
+    saveBlob(blob,"AssetGalaxy-PlayCanvas-AssetCodes.js");
+    toast("Asset codes downloaded");
+  });
+  renderPcQueue();
+
+  $("#buildMegaSearch").addEventListener("click",buildMegaResults);
+  $("#randomMegaSearch").addEventListener("click",randomMegaSearch);
+  ["megaTheme","megaAssetType","megaStyle","megaFormat"].forEach(id=>
+    $("#"+id).addEventListener("change",buildMegaResults)
+  );
+  $("#megaCustom").addEventListener("keydown",event=>{
+    if(event.key==="Enter"){
+      event.preventDefault();
+      buildMegaResults();
+    }
+  });
+
+  $("#searchForm").addEventListener("submit",handleSearch);
+  $("#licenseSelect").addEventListener("change",()=>{
+    renderSources();
+    if(state.query && state.tab==="live") searchLive(true);
+  });
+  $$(".tab").forEach(btn=>btn.addEventListener("click",()=>setTab(btn.dataset.tab)));
+  $$("[data-live-type]").forEach(btn=>btn.addEventListener("click",()=>{
+    state.liveType=btn.dataset.liveType;
+    state.livePage=1;
+    $$("[data-live-type]").forEach(x=>x.classList.toggle("active",x===btn));
+    if(state.query) searchLive(true);
+  }));
+  $("#loadMoreBtn").addEventListener("click",()=>{
+    if(!state.query){toast("Search first");return}
+    state.livePage++;
+    searchLive(false);
+  });
+  $("#historyBtn").addEventListener("click",openDrawer);
+  $("#closeDrawer").addEventListener("click",closeDrawer);
+  $("#drawer").addEventListener("click",e=>{if(e.target===$("#drawer")) closeDrawer()});
+  $("#clearStorage").addEventListener("click",()=>{
+    state.favorites.clear();state.history=[];
+    localStorage.removeItem("ag_favorites");localStorage.removeItem("ag_history");
+    renderSources();renderDrawer();toast("Saved data cleared");
+  });
+
+  // Start with a useful example without automatically contacting any API.
+  $("#searchInput").value="";
+})();
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+import { ColladaLoader } from "three/addons/loaders/ColladaLoader.js";
+import { PLYLoader } from "three/addons/loaders/PLYLoader.js";
+import * as SkeletonUtils from "three/addons/utils/SkeletonUtils.js";
+import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
+
+const gameEls = {
+  panel: document.querySelector("#gamePanel"),
+  stage: document.querySelector("#gameStage"),
+  canvas: document.querySelector("#gameCanvas"),
+  healthText: document.querySelector("#gameHealthText"),
+  healthFill: document.querySelector("#gameHealthFill"),
+  coreText: document.querySelector("#gameCoreText"),
+  pulseText: document.querySelector("#gamePulseText"),
+  message: document.querySelector("#gameMessage"),
+  start: document.querySelector("#gameStartBtn"),
+  pause: document.querySelector("#gamePauseBtn"),
+  reset: document.querySelector("#gameResetBtn"),
+  pulse: document.querySelector("#gamePulseBtn"),
+  jump: document.querySelector("#gameJumpBtn"),
+  movePad: document.querySelector("#gameMovePad"),
+  moveNub: document.querySelector("#gameMoveNub"),
+  fileInput: document.querySelector("#gameAssetInput"),
+  folderInput: document.querySelector("#gameFolderInput"),
+  drop: document.querySelector("#gameAssetDrop"),
+  folderBtn: document.querySelector("#gameFolderBtn"),
+  searchBtn: document.querySelector("#gameSearchBtn"),
+  role: document.querySelector("#gameAssetRole"),
+  status: document.querySelector("#gameImportStatus"),
+  list: document.querySelector("#gameAssetList"),
+  clear: document.querySelector("#gameClearAssets"),
+  engineStatus: document.querySelector("#gameEngineStatus")
+};
+
+const gameState = {
+  initialized: false,
+  running: false,
+  ended: false,
+  health: 100,
+  cores: 0,
+  targetCores: 5,
+  damageCooldown: 0,
+  pulseCooldown: 0,
+  jumpVelocity: 0,
+  onGround: true,
+  elapsed: 0,
+  imported: [],
+  currentMusic: null,
+  pulseAudio: null,
+  playerModelRecord: null,
+  enemyModelRecord: null
+};
+
+const input = {
+  keyX: 0,
+  keyZ: 0,
+  stickX: 0,
+  stickZ: 0
+};
+
+let renderer;
+let scene;
+let camera;
+let clock;
+let player;
+let playerVisual;
+let ground;
+let groundMaterial;
+let pulseRing;
+let animationFrame;
+let enemyPrototype = null;
+let mixerList = [];
+const enemies = [];
+const cores = [];
+const importedObjects = new Map();
+const WORLD_LIMIT = 28;
+const SUPPORTED_EXTENSIONS = new Set([
+  "zip","glb","gltf","bin","fbx","obj","dae","ply",
+  "png","jpg","jpeg","webp","gif","bmp","tga","hdr",
+  "wav","mp3","ogg","m4a","flac","json"
+]);
+
+function gameExtension(name) {
+  const match = String(name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+  return match ? match[1] : "";
+}
+
+function baseName(path) {
+  return String(path || "").split("/").pop() || "asset";
+}
+
+function setGameStatus(message, isError = false) {
+  gameEls.status.textContent = message;
+  gameEls.status.style.borderColor = isError ? "rgba(255,107,131,.30)" : "rgba(84,247,168,.16)";
+  gameEls.status.style.color = isError ? "#ffb2bf" : "#b7f6d1";
+}
+
+function showGameMessage(message, duration = 2200) {
+  gameEls.message.textContent = message;
+  gameEls.message.classList.add("show");
+  clearTimeout(showGameMessage.timer);
+  if (duration > 0) {
+    showGameMessage.timer = setTimeout(() => gameEls.message.classList.remove("show"), duration);
+  }
+}
+
+function updateGameHud() {
+  gameEls.healthText.textContent = String(Math.max(0, Math.round(gameState.health)));
+  gameEls.healthFill.style.width = `${Math.max(0, gameState.health)}%`;
+  gameEls.coreText.textContent = `${gameState.cores}/${gameState.targetCores}`;
+  gameEls.pulseText.textContent = gameState.pulseCooldown <= 0
+    ? "Pulse ready"
+    : `Pulse ${gameState.pulseCooldown.toFixed(1)}s`;
+}
+
+function createPlayerPrimitive() {
+  const group = new THREE.Group();
+  const bodyMaterial = new THREE.MeshStandardMaterial({
+    color: 0x38e8ff,
+    roughness: 0.45,
+    metalness: 0.12,
+    emissive: 0x06232b
+  });
+  const accentMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8c63ff,
+    roughness: 0.42,
+    emissive: 0x130c2d
+  });
+
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.46, 0.82, 5, 10), bodyMaterial);
+  body.position.y = 1.05;
+  body.castShadow = true;
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.20, 0.20), accentMaterial);
+  visor.position.set(0, 1.45, -0.38);
+  visor.castShadow = true;
+  const beacon = new THREE.Mesh(new THREE.OctahedronGeometry(0.16), accentMaterial);
+  beacon.position.set(0, 1.93, 0);
+  beacon.castShadow = true;
+
+  group.add(body, visor, beacon);
+  group.userData.isBuiltIn = true;
+  return group;
+}
+
+function createZombiePrimitive() {
+  const group = new THREE.Group();
+  const bodyMaterial = new THREE.MeshStandardMaterial({
+    color: 0x5d8d58,
+    roughness: 0.78
+  });
+  const shirtMaterial = new THREE.MeshStandardMaterial({
+    color: 0x303a4f,
+    roughness: 0.85
+  });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.15, 0.55), shirtMaterial);
+  body.position.y = 0.92;
+  body.castShadow = true;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.62, 0.60), bodyMaterial);
+  head.position.y = 1.78;
+  head.castShadow = true;
+  const eyeMaterial = new THREE.MeshBasicMaterial({ color: 0x9cff65 });
+  const eye1 = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.07, 0.04), eyeMaterial);
+  const eye2 = eye1.clone();
+  eye1.position.set(-0.16, 1.84, -0.31);
+  eye2.position.set(0.16, 1.84, -0.31);
+  group.add(body, head, eye1, eye2);
+  group.userData.isBuiltIn = true;
+  return group;
+}
+
+function normalizedClone(object) {
+  const clone = SkeletonUtils.clone(object);
+  clone.traverse(node => {
+    if (node.isMesh) {
+      node.castShadow = true;
+      node.receiveShadow = true;
+      if (node.material) node.material = node.material.clone();
+    }
+  });
+  const box = new THREE.Box3().setFromObject(clone);
+  const size = new THREE.Vector3();
+  const center = new THREE.Vector3();
+  box.getSize(size);
+  box.getCenter(center);
+  const largest = Math.max(size.x, size.y, size.z, 0.001);
+  const scale = 2.1 / largest;
+  clone.scale.setScalar(scale);
+  const adjusted = new THREE.Box3().setFromObject(clone);
+  clone.position.y -= adjusted.min.y;
+  return clone;
+}
+
+function initializeGame() {
+  if (gameState.initialized) return;
+
+  renderer = new THREE.WebGLRenderer({
+    canvas: gameEls.canvas,
+    antialias: true,
+    alpha: false,
+    powerPreference: "high-performance"
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.7));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x090d18);
+  scene.fog = new THREE.Fog(0x090d18, 20, 56);
+
+  camera = new THREE.PerspectiveCamera(58, 1, 0.1, 140);
+  camera.position.set(0, 8.5, 10.5);
+
+  clock = new THREE.Clock();
+
+  const hemi = new THREE.HemisphereLight(0x95cfff, 0x17140f, 1.7);
+  scene.add(hemi);
+
+  const moon = new THREE.DirectionalLight(0xbfd7ff, 2.8);
+  moon.position.set(-8, 16, 9);
+  moon.castShadow = true;
+  moon.shadow.mapSize.set(1024, 1024);
+  moon.shadow.camera.left = -35;
+  moon.shadow.camera.right = 35;
+  moon.shadow.camera.top = 35;
+  moon.shadow.camera.bottom = -35;
+  scene.add(moon);
+
+  const cyanLight = new THREE.PointLight(0x38e8ff, 18, 22, 2);
+  cyanLight.position.set(0, 4, 0);
+  scene.add(cyanLight);
+
+  groundMaterial = new THREE.MeshStandardMaterial({
+    color: 0x222a35,
+    roughness: 0.95,
+    metalness: 0.02
+  });
+  ground = new THREE.Mesh(new THREE.PlaneGeometry(75, 75), groundMaterial);
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  addBuiltInEnvironment();
+
+  player = new THREE.Group();
+  player.position.set(0, 0, 10);
+  playerVisual = createPlayerPrimitive();
+  player.add(playerVisual);
+  scene.add(player);
+
+  pulseRing = new THREE.Mesh(
+    new THREE.RingGeometry(0.75, 1.0, 48),
+    new THREE.MeshBasicMaterial({
+      color: 0x54f7a8,
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    })
+  );
+  pulseRing.rotation.x = -Math.PI / 2;
+  pulseRing.position.y = 0.08;
+  scene.add(pulseRing);
+
+  resetGameWorld();
+  resizeGame();
+  window.addEventListener("resize", resizeGame);
+  gameState.initialized = true;
+  gameEls.engineStatus.textContent = "Three.js game loaded";
+  animateGame();
+  restoreSavedAssets();
+}
+
+function addBuiltInEnvironment() {
+  const buildingMaterials = [
+    new THREE.MeshStandardMaterial({ color: 0x252b38, roughness: 0.9 }),
+    new THREE.MeshStandardMaterial({ color: 0x302b35, roughness: 0.9 }),
+    new THREE.MeshStandardMaterial({ color: 0x1f3437, roughness: 0.9 })
+  ];
+
+  for (let i = 0; i < 20; i++) {
+    const width = 2.8 + Math.random() * 4.2;
+    const depth = 2.8 + Math.random() * 4.2;
+    const height = 2.2 + Math.random() * 8;
+    const building = new THREE.Mesh(
+      new THREE.BoxGeometry(width, height, depth),
+      buildingMaterials[i % buildingMaterials.length]
+    );
+    const side = i % 2 === 0 ? -1 : 1;
+    building.position.set(
+      side * (11 + Math.random() * 14),
+      height / 2,
+      -26 + Math.random() * 52
+    );
+    building.rotation.y = (Math.random() - 0.5) * 0.28;
+    building.castShadow = true;
+    building.receiveShadow = true;
+    scene.add(building);
+
+    const windowMaterial = new THREE.MeshBasicMaterial({
+      color: i % 4 === 0 ? 0xffd45b : 0x243044
+    });
+    for (let floor = 1; floor < Math.min(5, Math.floor(height / 1.5)); floor++) {
+      const glow = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 0.30), windowMaterial);
+      glow.position.set(
+        building.position.x - side * (width / 2 + 0.01),
+        floor * 1.35,
+        building.position.z
+      );
+      glow.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
+      scene.add(glow);
+    }
+  }
+
+  const road = new THREE.Mesh(
+    new THREE.PlaneGeometry(15, 70),
+    new THREE.MeshStandardMaterial({ color: 0x11151d, roughness: 1 })
+  );
+  road.rotation.x = -Math.PI / 2;
+  road.position.y = 0.012;
+  road.receiveShadow = true;
+  scene.add(road);
+
+  for (let z = -31; z <= 31; z += 5) {
+    const marker = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.20, 2.4),
+      new THREE.MeshBasicMaterial({ color: 0x6d6e65 })
+    );
+    marker.rotation.x = -Math.PI / 2;
+    marker.position.set(0, 0.025, z);
+    scene.add(marker);
+  }
+}
+
+function createEnemyVisual() {
+  if (enemyPrototype) return normalizedClone(enemyPrototype);
+  return createZombiePrimitive();
+}
+
+function spawnEnemy(index) {
+  const angle = (index / 9) * Math.PI * 2 + Math.random() * 0.5;
+  const radius = 12 + Math.random() * 14;
+  const entity = new THREE.Group();
+  entity.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+  const visual = createEnemyVisual();
+  entity.add(visual);
+  entity.userData.speed = 1.0 + Math.random() * 0.85;
+  entity.userData.stun = 0;
+  entity.userData.wobble = Math.random() * Math.PI * 2;
+  scene.add(entity);
+  enemies.push(entity);
+}
+
+function spawnCore(index) {
+  const angle = (index / gameState.targetCores) * Math.PI * 2 + 0.7;
+  const radius = 8 + (index % 2) * 8;
+  const mesh = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.55, 0),
+    new THREE.MeshStandardMaterial({
+      color: 0x38e8ff,
+      emissive: 0x126e7c,
+      emissiveIntensity: 1.7,
+      roughness: 0.25,
+      metalness: 0.35
+    })
+  );
+  mesh.position.set(Math.cos(angle) * radius, 0.95, Math.sin(angle) * radius);
+  mesh.castShadow = true;
+  mesh.userData.baseY = mesh.position.y;
+  scene.add(mesh);
+  cores.push(mesh);
+
+  const light = new THREE.PointLight(0x38e8ff, 5, 7, 2);
+  mesh.add(light);
+}
+
+function resetGameWorld() {
+  if (!scene || !player) return;
+  enemies.splice(0).forEach(entity => scene.remove(entity));
+  cores.splice(0).forEach(entity => scene.remove(entity));
+
+  player.position.set(0, 0, 10);
+  player.rotation.set(0, 0, 0);
+  gameState.health = 100;
+  gameState.cores = 0;
+  gameState.damageCooldown = 0;
+  gameState.pulseCooldown = 0;
+  gameState.jumpVelocity = 0;
+  gameState.onGround = true;
+  gameState.ended = false;
+
+  for (let i = 0; i < 9; i++) spawnEnemy(i);
+  for (let i = 0; i < gameState.targetCores; i++) spawnCore(i);
+
+  updateGameHud();
+  showGameMessage("Collect five signal cores. Use PULSE when infected get close.", 3200);
+}
+
+function startGame() {
+  initializeGame();
+  gameState.running = true;
+  gameState.ended = false;
+  gameEls.start.textContent = "RUNNING";
+  showGameMessage("Signal run started!", 1300);
+  if (gameState.currentMusic) {
+    gameState.currentMusic.play().catch(() => {});
+  }
+}
+
+function pauseGame() {
+  initializeGame();
+  gameState.running = !gameState.running;
+  gameEls.pause.textContent = gameState.running ? "PAUSE" : "RESUME";
+  showGameMessage(gameState.running ? "Game resumed" : "Game paused", 1000);
+  if (!gameState.running && gameState.currentMusic) gameState.currentMusic.pause();
+  if (gameState.running && gameState.currentMusic) gameState.currentMusic.play().catch(() => {});
+}
+
+function activatePulse() {
+  initializeGame();
+  if (!gameState.running || gameState.ended || gameState.pulseCooldown > 0) return;
+
+  gameState.pulseCooldown = 3.2;
+  pulseRing.position.set(player.position.x, 0.08, player.position.z);
+  pulseRing.scale.setScalar(0.3);
+  pulseRing.material.opacity = 0.82;
+
+  for (const enemy of enemies) {
+    const dx = enemy.position.x - player.position.x;
+    const dz = enemy.position.z - player.position.z;
+    const distance = Math.hypot(dx, dz);
+    if (distance < 7 && distance > 0.001) {
+      enemy.position.x += (dx / distance) * (7 - distance) * 0.9;
+      enemy.position.z += (dz / distance) * (7 - distance) * 0.9;
+      enemy.userData.stun = 1.25;
+    }
+  }
+
+  if (gameState.pulseAudio) {
+    gameState.pulseAudio.currentTime = 0;
+    gameState.pulseAudio.play().catch(() => {});
+  }
+
+  showGameMessage("Energy pulse activated", 900);
+}
+
+function jumpPlayer() {
+  initializeGame();
+  if (!gameState.running || !gameState.onGround || gameState.ended) return;
+  gameState.jumpVelocity = 6.2;
+  gameState.onGround = false;
+}
+
+function resizeGame() {
+  if (!renderer || !camera || !gameEls.stage) return;
+  const rect = gameEls.stage.getBoundingClientRect();
+  const width = Math.max(1, Math.floor(rect.width));
+  const height = Math.max(1, Math.floor(rect.height));
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+
+function updateInputFromKeys(keys) {
+  input.keyX = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0)
+    - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
+  input.keyZ = (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0)
+    - (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0);
+}
+
+const pressedKeys = new Set();
+window.addEventListener("keydown", event => {
+  pressedKeys.add(event.code);
+  updateInputFromKeys(pressedKeys);
+  if (event.code === "Space") {
+    event.preventDefault();
+    jumpPlayer();
+  }
+  if (event.code === "KeyF") activatePulse();
+});
+window.addEventListener("keyup", event => {
+  pressedKeys.delete(event.code);
+  updateInputFromKeys(pressedKeys);
+});
+
+function setupJoystick() {
+  let pointerId = null;
+
+  const update = event => {
+    const rect = gameEls.movePad.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const radius = rect.width * 0.33;
+    let dx = event.clientX - centerX;
+    let dy = event.clientY - centerY;
+    const length = Math.hypot(dx, dy);
+    if (length > radius) {
+      dx = (dx / length) * radius;
+      dy = (dy / length) * radius;
+    }
+    input.stickX = dx / radius;
+    input.stickZ = dy / radius;
+    gameEls.moveNub.style.transform = `translate(${dx}px,${dy}px)`;
+  };
+
+  const end = event => {
+    if (pointerId !== null && event.pointerId !== pointerId) return;
+    pointerId = null;
+    input.stickX = 0;
+    input.stickZ = 0;
+    gameEls.moveNub.style.transform = "translate(0,0)";
+    try { gameEls.movePad.releasePointerCapture(event.pointerId); } catch (_) {}
+  };
+
+  gameEls.movePad.addEventListener("pointerdown", event => {
+    pointerId = event.pointerId;
+    gameEls.movePad.setPointerCapture(pointerId);
+    update(event);
+  });
+  gameEls.movePad.addEventListener("pointermove", event => {
+    if (event.pointerId === pointerId) update(event);
+  });
+  gameEls.movePad.addEventListener("pointerup", end);
+  gameEls.movePad.addEventListener("pointercancel", end);
+}
+
+function updateGame(delta) {
+  gameState.elapsed += delta;
+  gameState.damageCooldown = Math.max(0, gameState.damageCooldown - delta);
+  gameState.pulseCooldown = Math.max(0, gameState.pulseCooldown - delta);
+
+  const moveX = THREE.MathUtils.clamp(input.keyX + input.stickX, -1, 1);
+  const moveZ = THREE.MathUtils.clamp(input.keyZ + input.stickZ, -1, 1);
+  const moveLength = Math.hypot(moveX, moveZ);
+
+  if (moveLength > 0.05) {
+    const nx = moveX / Math.max(1, moveLength);
+    const nz = moveZ / Math.max(1, moveLength);
+    const speed = 6.2;
+    player.position.x += nx * speed * delta;
+    player.position.z += nz * speed * delta;
+    player.rotation.y = Math.atan2(nx, nz);
+    if (playerVisual) playerVisual.rotation.z = Math.sin(gameState.elapsed * 11) * 0.025;
+  }
+
+  player.position.x = THREE.MathUtils.clamp(player.position.x, -WORLD_LIMIT, WORLD_LIMIT);
+  player.position.z = THREE.MathUtils.clamp(player.position.z, -WORLD_LIMIT, WORLD_LIMIT);
+
+  if (!gameState.onGround) {
+    gameState.jumpVelocity -= 13.5 * delta;
+    player.position.y += gameState.jumpVelocity * delta;
+    if (player.position.y <= 0) {
+      player.position.y = 0;
+      gameState.jumpVelocity = 0;
+      gameState.onGround = true;
+    }
+  }
+
+  enemies.forEach((enemy, index) => {
+    enemy.userData.stun = Math.max(0, enemy.userData.stun - delta);
+    const dx = player.position.x - enemy.position.x;
+    const dz = player.position.z - enemy.position.z;
+    const distance = Math.hypot(dx, dz);
+
+    if (enemy.userData.stun <= 0 && distance > 0.001) {
+      const speed = enemy.userData.speed * (gameState.cores >= 3 ? 1.16 : 1);
+      enemy.position.x += (dx / distance) * speed * delta;
+      enemy.position.z += (dz / distance) * speed * delta;
+      enemy.rotation.y = Math.atan2(dx, dz);
+    }
+
+    enemy.position.y = Math.sin(gameState.elapsed * 5 + enemy.userData.wobble) * 0.035;
+
+    if (distance < 1.25 && gameState.damageCooldown <= 0) {
+      gameState.health -= 10;
+      gameState.damageCooldown = 0.8;
+      enemy.position.x -= (dx / Math.max(distance, 0.1)) * 1.1;
+      enemy.position.z -= (dz / Math.max(distance, 0.1)) * 1.1;
+      showGameMessage("The infected drained your energy!", 700);
+
+      if (gameState.health <= 0) {
+        gameState.health = 0;
+        gameState.ended = true;
+        gameState.running = false;
+        showGameMessage("Signal lost. Tap RESET and try again.", 0);
+      }
+    }
+  });
+
+  for (let i = cores.length - 1; i >= 0; i--) {
+    const core = cores[i];
+    core.rotation.y += delta * 1.8;
+    core.position.y = core.userData.baseY + Math.sin(gameState.elapsed * 2.6 + i) * 0.15;
+    if (core.position.distanceTo(player.position) < 1.45) {
+      scene.remove(core);
+      cores.splice(i, 1);
+      gameState.cores += 1;
+      gameState.health = Math.min(100, gameState.health + 8);
+      showGameMessage(`Signal core ${gameState.cores}/${gameState.targetCores}`, 900);
+
+      if (gameState.cores >= gameState.targetCores) {
+        gameState.ended = true;
+        gameState.running = false;
+        showGameMessage("Evacuation signal restored — you escaped!", 0);
+      }
+    }
+  }
+
+  if (pulseRing.material.opacity > 0) {
+    pulseRing.scale.multiplyScalar(1 + delta * 5.2);
+    pulseRing.material.opacity = Math.max(0, pulseRing.material.opacity - delta * 1.5);
+  }
+
+  updateGameHud();
+}
+
+function updateCamera(delta) {
+  if (!player || !camera) return;
+  const target = new THREE.Vector3(player.position.x, player.position.y + 1.2, player.position.z);
+  const desired = new THREE.Vector3(
+    player.position.x,
+    player.position.y + 8.2,
+    player.position.z + 10.5
+  );
+  camera.position.lerp(desired, 1 - Math.pow(0.002, delta));
+  camera.lookAt(target);
+}
+
+function animateGame() {
+  animationFrame = requestAnimationFrame(animateGame);
+  if (!renderer || !scene || !camera) return;
+  const delta = Math.min(clock.getDelta(), 0.05);
+
+  if (gameState.running && !gameState.ended) updateGame(delta);
+  updateCamera(delta);
+
+  for (const item of mixerList) item.mixer.update(delta);
+  renderer.render(scene, camera);
+}
+
+function inferRole(file, chosenRole) {
+  if (chosenRole && chosenRole !== "auto") return chosenRole;
+  const name = String(file.name || "").toLowerCase();
+  const ext = gameExtension(name);
+
+  if (["glb","gltf","fbx","obj","dae","ply"].includes(ext)) {
+    if (/(zombie|undead|infected|monster|enemy|creature)/.test(name)) return "enemy";
+    if (/(player|avatar|hero|survivor|character)/.test(name)) return "player";
+    return "prop";
+  }
+
+  if (["png","jpg","jpeg","webp","gif","bmp","tga","hdr"].includes(ext)) {
+    if (/(sky|background|hdri|night)/.test(name)) return "sky";
+    if (/(ground|terrain|floor|road|grass|concrete|asphalt)/.test(name)) return "ground";
+    if (/(effect|decal|mark|splatter|scratch)/.test(name)) return "decal";
+    return "ground";
+  }
+
+  if (["wav","mp3","ogg","m4a","flac"].includes(ext)) {
+    if (/(pulse|effect|impact|power|ability)/.test(name)) return "pulseSound";
+    return "music";
+  }
+
+  if (ext === "json") return "map";
+  return "prop";
+}
+
+function fileIcon(fileName) {
+  const ext = gameExtension(fileName);
+  if (["glb","gltf","fbx","obj","dae","ply"].includes(ext)) return "🧊";
+  if (["png","jpg","jpeg","webp","gif","bmp","tga","hdr"].includes(ext)) return "🖼️";
+  if (["wav","mp3","ogg","m4a","flac"].includes(ext)) return "🎧";
+  if (ext === "json") return "{ }";
+  return "📦";
+}
+
+function formatGameBytes(bytes) {
+  if (!bytes) return "0 B";
+  const units = ["B","KB","MB","GB"];
+  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+  return `${(bytes / Math.pow(1024, index)).toFixed(index ? 1 : 0)} ${units[index]}`;
+}
+
+function openAssetDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("AssetGalaxyIntegratedGame", 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains("assets")) {
+        db.createObjectStore("assets", { keyPath: "id" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function dbPut(record) {
+  const db = await openAssetDatabase();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction("assets", "readwrite");
+    tx.objectStore("assets").put(record);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+}
+
+async function dbDelete(id) {
+  const db = await openAssetDatabase();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction("assets", "readwrite");
+    tx.objectStore("assets").delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+}
+
+async function dbGetAll() {
+  const db = await openAssetDatabase();
+  const records = await new Promise((resolve, reject) => {
+    const tx = db.transaction("assets", "readonly");
+    const request = tx.objectStore("assets").getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+  db.close();
+  return records;
+}
+
+async function dbClear() {
+  const db = await openAssetDatabase();
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction("assets", "readwrite");
+    tx.objectStore("assets").clear();
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+}
+
+function createLoadingManager(records) {
+  const manager = new THREE.LoadingManager();
+  const urls = new Map();
+
+  records.forEach(record => {
+    const objectUrl = URL.createObjectURL(record.file);
+    record.objectUrl = objectUrl;
+    const path = String(record.path || record.file.name).replace(/^\.?\//, "");
+    urls.set(path, objectUrl);
+    urls.set(baseName(path), objectUrl);
+    try {
+      urls.set(decodeURIComponent(path), objectUrl);
+      urls.set(baseName(decodeURIComponent(path)), objectUrl);
+    } catch (_) {}
+  });
+
+  manager.setURLModifier(url => {
+    const cleaned = String(url).split("?")[0].replace(/^\.?\//, "");
+    try {
+      return urls.get(cleaned) || urls.get(decodeURIComponent(cleaned)) || urls.get(baseName(cleaned)) || url;
+    } catch (_) {
+      return urls.get(cleaned) || urls.get(baseName(cleaned)) || url;
+    }
+  });
+
+  return manager;
+}
+
+function modelPromise(record, manager) {
+  const ext = gameExtension(record.file.name);
+  const url = record.objectUrl || URL.createObjectURL(record.file);
+
+  if (ext === "glb" || ext === "gltf") {
+    return new Promise((resolve, reject) => {
+      new GLTFLoader(manager).load(url, gltf => {
+        if (gltf.animations?.length) {
+          const mixer = new THREE.AnimationMixer(gltf.scene);
+          mixer.clipAction(gltf.animations[0]).play();
+          mixerList.push({ mixer, root: gltf.scene, recordId: record.id });
+        }
+        resolve(gltf.scene);
+      }, undefined, reject);
+    });
+  }
+
+  if (ext === "fbx") {
+    return new Promise((resolve, reject) => {
+      new FBXLoader(manager).load(url, object => {
+        if (object.animations?.length) {
+          const mixer = new THREE.AnimationMixer(object);
+          mixer.clipAction(object.animations[0]).play();
+          mixerList.push({ mixer, root: object, recordId: record.id });
+        }
+        resolve(object);
+      }, undefined, reject);
+    });
+  }
+
+  if (ext === "obj") {
+    return new Promise((resolve, reject) => {
+      new OBJLoader(manager).load(url, resolve, undefined, reject);
+    });
+  }
+
+  if (ext === "dae") {
+    return new Promise((resolve, reject) => {
+      new ColladaLoader(manager).load(url, result => resolve(result.scene), undefined, reject);
+    });
+  }
+
+  if (ext === "ply") {
+    return new Promise((resolve, reject) => {
+      new PLYLoader(manager).load(url, geometry => {
+        geometry.computeVertexNormals();
+        resolve(new THREE.Mesh(
+          geometry,
+          new THREE.MeshStandardMaterial({ color: 0xb4b8c7, roughness: 0.7 })
+        ));
+      }, undefined, reject);
+    });
+  }
+
+  return Promise.reject(new Error(`Unsupported model type: .${ext}`));
+}
+
+function removeImportedObjects(recordId) {
+  const objects = importedObjects.get(recordId) || [];
+  objects.forEach(object => {
+    if (object.parent) object.parent.remove(object);
+    object.traverse?.(node => {
+      if (node.geometry) node.geometry.dispose?.();
+      if (node.material) {
+        const materials = Array.isArray(node.material) ? node.material : [node.material];
+        materials.forEach(material => {
+          Object.values(material).forEach(value => value?.isTexture && value.dispose?.());
+          material.dispose?.();
+        });
+      }
+    });
+  });
+  importedObjects.delete(recordId);
+  mixerList = mixerList.filter(item => item.recordId !== recordId);
+}
+
+async function applyModelRecord(record, manager) {
+  const object = await modelPromise(record, manager);
+  const role = record.role;
+  const objects = [];
+
+  if (role === "player") {
+    if (playerVisual) player.remove(playerVisual);
+    playerVisual = normalizedClone(object);
+    playerVisual.userData.assetRecordId = record.id;
+    player.add(playerVisual);
+    gameState.playerModelRecord = record.id;
+    objects.push(playerVisual);
+    showGameMessage(`${record.file.name} is now your player`, 1700);
+  } else if (role === "enemy") {
+    enemyPrototype = object;
+    gameState.enemyModelRecord = record.id;
+    enemies.forEach(enemy => {
+      while (enemy.children.length) enemy.remove(enemy.children[0]);
+      const visual = normalizedClone(enemyPrototype);
+      visual.userData.assetRecordId = record.id;
+      enemy.add(visual);
+      objects.push(visual);
+    });
+    showGameMessage(`${record.file.name} is now the enemy model`, 1700);
+  } else {
+    const prop = normalizedClone(object);
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 5 + Math.random() * 19;
+    prop.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+    prop.rotation.y = Math.random() * Math.PI * 2;
+    prop.userData.assetRecordId = record.id;
+    scene.add(prop);
+    objects.push(prop);
+    showGameMessage(`${record.file.name} added as a world prop`, 1500);
+  }
+
+  importedObjects.set(record.id, objects);
+}
+
+async function applyImageRecord(record) {
+  const url = URL.createObjectURL(record.file);
+  record.objectUrl = url;
+  const texture = await new Promise((resolve, reject) => {
+    new THREE.TextureLoader().load(url, resolve, undefined, reject);
+  });
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+  if (record.role === "sky") {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    scene.background = texture;
+    importedObjects.set(record.id, []);
+    showGameMessage(`${record.file.name} added as the background`, 1500);
+    return;
+  }
+
+  if (record.role === "decal") {
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const decal = new THREE.Mesh(new THREE.PlaneGeometry(3.5, 3.5), material);
+    decal.rotation.x = -Math.PI / 2;
+    decal.position.set((Math.random() - 0.5) * 24, 0.035, (Math.random() - 0.5) * 24);
+    scene.add(decal);
+    importedObjects.set(record.id, [decal]);
+    showGameMessage(`${record.file.name} placed as an effect decal`, 1500);
+    return;
+  }
+
+  texture.repeat.set(8, 8);
+  groundMaterial.map = texture;
+  groundMaterial.color.set(0xffffff);
+  groundMaterial.needsUpdate = true;
+  importedObjects.set(record.id, []);
+  showGameMessage(`${record.file.name} applied to the ground`, 1500);
+}
+
+async function applyAudioRecord(record) {
+  const url = URL.createObjectURL(record.file);
+  record.objectUrl = url;
+  const audio = new Audio(url);
+  audio.preload = "auto";
+
+  if (record.role === "pulseSound") {
+    gameState.pulseAudio = audio;
+    importedObjects.set(record.id, []);
+    showGameMessage(`${record.file.name} set as the pulse sound`, 1500);
+    return;
+  }
+
+  if (gameState.currentMusic) {
+    gameState.currentMusic.pause();
+  }
+  audio.loop = true;
+  audio.volume = 0.35;
+  gameState.currentMusic = audio;
+  importedObjects.set(record.id, []);
+  if (gameState.running) audio.play().catch(() => {});
+  showGameMessage(`${record.file.name} set as background audio`, 1500);
+}
+
+async function applyJsonRecord(record) {
+  const text = await record.file.text();
+  const data = JSON.parse(text);
+
+  if (typeof data.groundColor === "string") {
+    groundMaterial.map = null;
+    groundMaterial.color.set(data.groundColor);
+    groundMaterial.needsUpdate = true;
+  }
+
+  if (typeof data.fogColor === "string") {
+    scene.fog.color.set(data.fogColor);
+    scene.background = new THREE.Color(data.fogColor);
+  }
+
+  if (Array.isArray(data.props)) {
+    const created = [];
+    data.props.slice(0, 80).forEach(item => {
+      const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(
+          Number(item.width) || 1,
+          Number(item.height) || 1,
+          Number(item.depth) || 1
+        ),
+        new THREE.MeshStandardMaterial({
+          color: item.color || 0x596274,
+          roughness: 0.8
+        })
+      );
+      mesh.position.set(Number(item.x) || 0, (Number(item.height) || 1) / 2, Number(item.z) || 0);
+      mesh.rotation.y = Number(item.rotationY) || 0;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+      created.push(mesh);
+    });
+    importedObjects.set(record.id, created);
+  } else {
+    importedObjects.set(record.id, []);
+  }
+
+  showGameMessage(`${record.file.name} map settings loaded`, 1500);
+}
+
+async function applyAssetRecords(records, persist = true) {
+  initializeGame();
+  if (!records.length) return;
+
+  const manager = createLoadingManager(records);
+  let success = 0;
+  let failure = 0;
+  const hasModel = records.some(record =>
+    ["glb","gltf","fbx","obj","dae","ply"].includes(gameExtension(record.file.name))
+  );
+
+  for (const record of records) {
+    try {
+      const ext = gameExtension(record.file.name);
+      if (!SUPPORTED_EXTENSIONS.has(ext)) continue;
+
+      if (persist) await dbPut(record);
+
+      if (ext === "bin") {
+        if (!gameState.imported.some(item => item.id === record.id)) {
+          gameState.imported.push(record);
+        }
+        success++;
+        continue;
+      }
+
+      if (["glb","gltf","fbx","obj","dae","ply"].includes(ext)) {
+        await applyModelRecord(record, manager);
+      } else if (["png","jpg","jpeg","webp","gif","bmp","tga","hdr"].includes(ext)) {
+        const explicitVisualRole = ["ground","sky","decal"].includes(record.role);
+        if (!hasModel || explicitVisualRole || /(ground|terrain|sky|background|effect|decal|road|floor)/i.test(record.file.name)) {
+          await applyImageRecord(record);
+        }
+      } else if (["wav","mp3","ogg","m4a","flac"].includes(ext)) {
+        await applyAudioRecord(record);
+      } else if (ext === "json") {
+        await applyJsonRecord(record);
+      }
+
+      if (!gameState.imported.some(item => item.id === record.id)) {
+        gameState.imported.push(record);
+      }
+      success++;
+    } catch (error) {
+      console.warn("Asset import failed", record.file.name, error);
+      failure++;
+    }
+  }
+
+  renderGameAssetList();
+
+  if (success) {
+    setGameStatus(`${success} asset file${success === 1 ? "" : "s"} processed and added to the game${failure ? `; ${failure} could not be loaded` : ""}.`);
+  } else {
+    setGameStatus("No compatible playable assets were found in that selection.", true);
+  }
+}
+
+async function expandZipFile(file) {
+  const zip = await JSZip.loadAsync(file);
+  const records = [];
+
+  for (const [path, entry] of Object.entries(zip.files)) {
+    if (entry.dir) continue;
+    const ext = gameExtension(path);
+    if (!SUPPORTED_EXTENSIONS.has(ext) || ext === "zip") continue;
+    const blob = await entry.async("blob");
+    const extracted = new File([blob], baseName(path), {
+      type: blob.type || "",
+      lastModified: Date.now()
+    });
+    records.push({ file: extracted, path });
+  }
+
+  return records;
+}
+
+async function importChosenFiles(fileList, source = "Downloads") {
+  const files = [...fileList];
+  if (!files.length) return;
+
+  initializeGame();
+  setGameStatus(`Reading ${files.length} selected file${files.length === 1 ? "" : "s"}…`);
+
+  const chosenRole = gameEls.role.value;
+  const records = [];
+
+  for (const file of files) {
+    const ext = gameExtension(file.name);
+    if (ext === "zip") {
+      try {
+        const unpacked = await expandZipFile(file);
+        unpacked.forEach(item => {
+          records.push({
+            id: `${Date.now()}-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`,
+            file: item.file,
+            path: item.path,
+            role: inferRole(item.file, chosenRole),
+            source,
+            importedAt: Date.now()
+          });
+        });
+      } catch (error) {
+        console.warn(error);
+        setGameStatus(`${file.name} could not be unpacked. Try extracting it in My Files and use Import extracted folder.`, true);
+      }
+      continue;
+    }
+
+    if (!SUPPORTED_EXTENSIONS.has(ext)) continue;
+    records.push({
+      id: `${Date.now()}-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`,
+      file,
+      path: file.webkitRelativePath || file.name,
+      role: inferRole(file, chosenRole),
+      source,
+      importedAt: Date.now()
+    });
+  }
+
+  await applyAssetRecords(records, true);
+}
+
+async function restoreSavedAssets() {
+  try {
+    const records = await dbGetAll();
+    if (!records.length) {
+      renderGameAssetList();
+      return;
+    }
+    setGameStatus(`Restoring ${records.length} saved asset file${records.length === 1 ? "" : "s"}…`);
+    await applyAssetRecords(records, false);
+  } catch (error) {
+    console.warn(error);
+    setGameStatus("Saved assets could not be restored in this browser.", true);
+  }
+}
+
+function renderGameAssetList() {
+  if (!gameState.imported.length) {
+    gameEls.list.innerHTML = `<div class="empty" style="padding:18px 10px"><strong>No imported assets</strong>Add a downloaded asset above.</div>`;
+    return;
+  }
+
+  gameEls.list.innerHTML = gameState.imported.map(record => `
+    <div class="game-asset-row">
+      <div class="game-asset-icon">${fileIcon(record.file.name)}</div>
+      <div>
+        <strong title="${String(record.file.name).replace(/"/g, "&quot;")}">${record.file.name}</strong>
+        <small>${record.role} · ${formatGameBytes(record.file.size)}</small>
+      </div>
+      <button class="game-remove-asset" data-remove-game-asset="${record.id}" aria-label="Remove asset">✕</button>
+    </div>
+  `).join("");
+
+  gameEls.list.querySelectorAll("[data-remove-game-asset]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const id = button.dataset.removeGameAsset;
+      const record = gameState.imported.find(item => item.id === id);
+      removeImportedObjects(id);
+      gameState.imported = gameState.imported.filter(item => item.id !== id);
+      await dbDelete(id);
+
+      if (gameState.playerModelRecord === id) {
+        if (playerVisual) player.remove(playerVisual);
+        playerVisual = createPlayerPrimitive();
+        player.add(playerVisual);
+        gameState.playerModelRecord = null;
+      }
+
+      if (gameState.enemyModelRecord === id) {
+        enemyPrototype = null;
+        gameState.enemyModelRecord = null;
+        enemies.forEach(enemy => {
+          while (enemy.children.length) enemy.remove(enemy.children[0]);
+          enemy.add(createZombiePrimitive());
+        });
+      }
+
+      renderGameAssetList();
+      setGameStatus(`${record?.file.name || "Asset"} removed. Reset the game if you want to rebuild the scene.`);
+    });
+  });
+}
+
+async function addRemoteResultToGame(button) {
+  const url = button.dataset.gameUrl;
+  if (!url) return;
+
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "Adding…";
+
+  try {
+    const response = await fetch(url, { mode: "cors" });
+    if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+    const blob = await response.blob();
+    if (blob.size > 100 * 1024 * 1024) throw new Error("Remote asset is too large");
+
+    const kind = button.dataset.gameKind || "asset";
+    const extension = blob.type.includes("png") ? "png"
+      : blob.type.includes("jpeg") ? "jpg"
+      : blob.type.includes("webp") ? "webp"
+      : blob.type.includes("ogg") ? "ogg"
+      : blob.type.includes("wav") ? "wav"
+      : blob.type.includes("mpeg") ? "mp3"
+      : kind === "audio" ? "mp3" : "jpg";
+
+    let name = String(button.dataset.gameTitle || `remote-${kind}`)
+      .replace(/[\\/:*?"<>|]+/g, "-")
+      .trim()
+      .slice(0, 90) || `remote-${kind}`;
+    if (!gameExtension(name)) name += `.${extension}`;
+
+    const file = new File([blob], name, { type: blob.type, lastModified: Date.now() });
+    await importChosenFiles([file], button.dataset.gamePage || "Openverse");
+    document.querySelector('[data-tab="game"]')?.click();
+  } catch (error) {
+    console.warn(error);
+    setGameStatus("That source blocked direct importing. Download the asset, then use Add Downloads to Game.", true);
+    document.querySelector('[data-tab="game"]')?.click();
+  } finally {
+    button.disabled = false;
+    button.textContent = original;
+  }
+}
+
+gameEls.start.addEventListener("click", startGame);
+gameEls.pause.addEventListener("click", pauseGame);
+gameEls.reset.addEventListener("click", () => {
+  initializeGame();
+  resetGameWorld();
+  gameState.running = true;
+  gameEls.start.textContent = "RUNNING";
+});
+gameEls.pulse.addEventListener("pointerdown", event => {
+  event.preventDefault();
+  activatePulse();
+});
+gameEls.jump.addEventListener("pointerdown", event => {
+  event.preventDefault();
+  jumpPlayer();
+});
+
+gameEls.drop.addEventListener("click", () => gameEls.fileInput.click());
+gameEls.drop.addEventListener("keydown", event => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    gameEls.fileInput.click();
+  }
+});
+gameEls.fileInput.addEventListener("change", async () => {
+  await importChosenFiles(gameEls.fileInput.files, "Downloads");
+  gameEls.fileInput.value = "";
+});
+gameEls.folderBtn.addEventListener("click", () => gameEls.folderInput.click());
+gameEls.folderInput.addEventListener("change", async () => {
+  await importChosenFiles(gameEls.folderInput.files, "Selected folder");
+  gameEls.folderInput.value = "";
+});
+gameEls.searchBtn.addEventListener("click", () => {
+  document.querySelector('[data-tab="mega"]')?.click();
+});
+
+["dragenter","dragover"].forEach(type => gameEls.drop.addEventListener(type, event => {
+  event.preventDefault();
+  gameEls.drop.classList.add("drag");
+}));
+["dragleave","drop"].forEach(type => gameEls.drop.addEventListener(type, event => {
+  event.preventDefault();
+  gameEls.drop.classList.remove("drag");
+}));
+gameEls.drop.addEventListener("drop", event => {
+  importChosenFiles(event.dataTransfer.files, "Drag and drop");
+});
+
+gameEls.clear.addEventListener("click", async () => {
+  if (!gameState.imported.length) return;
+  if (!confirm("Remove every saved custom game asset?")) return;
+
+  for (const record of gameState.imported) removeImportedObjects(record.id);
+  gameState.imported = [];
+  enemyPrototype = null;
+  gameState.enemyModelRecord = null;
+
+  if (playerVisual) player.remove(playerVisual);
+  playerVisual = createPlayerPrimitive();
+  player.add(playerVisual);
+  gameState.playerModelRecord = null;
+
+  if (gameState.currentMusic) {
+    gameState.currentMusic.pause();
+    gameState.currentMusic = null;
+  }
+  gameState.pulseAudio = null;
+  groundMaterial.map = null;
+  groundMaterial.color.set(0x222a35);
+  groundMaterial.needsUpdate = true;
+  scene.background = new THREE.Color(0x090d18);
+
+  await dbClear();
+  resetGameWorld();
+  renderGameAssetList();
+  setGameStatus("All custom assets removed. Built-in assets restored.");
+});
+
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-game-url]");
+  if (button) addRemoteResultToGame(button);
+});
+
+document.querySelector('[data-tab="game"]')?.addEventListener("click", () => {
+  initializeGame();
+  setTimeout(resizeGame, 60);
+});
+
+setupJoystick();
+updateGameHud();
+</script>
+
+</body>
+</html>
