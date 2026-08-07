@@ -4418,20 +4418,141 @@ ${notes || "(none)"}
     return Array.isArray(data.results)?data.results:[];
   }
 
-  async function pullOpenverseFile(item,kind,label){
-    const direct=String(item?.url||"");
-    if(!direct) throw new Error("No direct file URL");
-    const response=await fetch(direct,{mode:"cors"});
-    if(!response.ok) throw new Error(`Asset download failed: ${response.status}`);
-    const blob=await response.blob();
-    if(!blob.size || blob.size>35*1024*1024) throw new Error("Asset was empty or larger than 35 MB");
-    let name=cleanName(String(item?.title||label||"game-asset"));
-    if(!extensionOf(name)) name+=`.`+mimeExtension(blob.type,kind,direct);
-    const file=new File([blob],name,{type:blob.type,lastModified:Date.now()});
-    addPcFiles([file],{sourcePage:item?.foreign_landing_url||"",creator:item?.creator||"",license:item?.license||""});
-    return {name:file.name,type:file.type,size:file.size,sourcePage:item?.foreign_landing_url||"",creator:item?.creator||"",license:item?.license||""};
+  async function pullOpenverseFile(item,kind,label){async function pullOpenverseFile(item,kind,label){
+  const endpoint =
+    kind === "audio"
+      ? "audio"
+      : "images";
+
+  const id = String(item?.id || "");
+
+  if(!id){
+    throw new Error("Openverse asset has no ID");
   }
 
+  const workerBase =
+    mediaWorkerUrl().replace(/\/+$/,"");
+
+  const url =
+    `${workerBase}/openverse-file?kind=${encodeURIComponent(endpoint)}&id=${encodeURIComponent(id)}`;
+
+  const response = await fetch(url);
+
+  if(!response.ok){
+    let message =
+      `Asset proxy failed: ${response.status}`;
+
+    try{
+      const data = await response.json();
+
+      if(data?.error){
+        message = data.error;
+      }
+    }catch{}
+
+    throw new Error(message);
+  }
+
+  const blob = await response.blob();
+
+  if(!blob.size){
+    throw new Error("Downloaded asset was empty");
+  }
+
+  if(blob.size > 20 * 1024 * 1024){
+    throw new Error("Asset is larger than 20 MB");
+  }
+
+  let name =
+    cleanName(
+      String(
+        item?.title ||
+        label ||
+        "game-asset"
+      )
+    );
+
+  const workerType =
+    String(
+      response.headers.get(
+        "X-Asset-Filetype"
+      ) || ""
+    )
+      .replace(/^\./,"")
+      .toLowerCase();
+
+  if(!extensionOf(name)){
+    let extension = "";
+
+    if(
+      /^[a-z0-9]{2,6}$/.test(workerType)
+    ){
+      extension = workerType;
+    }else{
+      extension =
+        mimeExtension(
+          blob.type,
+          kind,
+          String(item?.url || "")
+        );
+    }
+
+    name += "." + extension;
+  }
+
+  const file =
+    new File(
+      [blob],
+      name,
+      {
+        type:
+          blob.type ||
+          "application/octet-stream",
+
+        lastModified:
+          Date.now()
+      }
+    );
+
+  addPcFiles(
+    [file],
+    {
+      sourcePage:
+        item?.foreign_landing_url ||
+        "",
+
+      creator:
+        item?.creator ||
+        response.headers.get(
+          "X-Asset-Creator"
+        ) ||
+        "",
+
+      license:
+        item?.license ||
+        response.headers.get(
+          "X-Asset-License"
+        ) ||
+        ""
+    }
+  );
+
+  return {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+    sourcePage:
+      item?.foreign_landing_url ||
+      "",
+    creator:
+      item?.creator ||
+      "",
+    license:
+      item?.license ||
+      ""
+  };
+}
+  }
   async function autoGamePrepareAssets(prompt,force=false){
     const settings=gameBuilderSettings();
     if(!force && (!settings.autoEnabled || !gameBuilderDetect(prompt))) return "";
